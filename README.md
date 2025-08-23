@@ -1,1 +1,1 @@
-# BLOCKELECT: A Blockchain Based Secure Voting System
+# BLOCKELECT: A Blockchain-Based Secure Voting System
