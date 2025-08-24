@@ -35,7 +35,7 @@ The following software versions are recommended for deploying this application (
  ![Official Detected (Voting Page)](./views/official_detected.png)
  ![Electoral Commission Dashboard](./views/commission_dashboard.png)
 
-## 📥 Installation/Set Up
+## 📥 Set Up
 
 Coming soon!
 
