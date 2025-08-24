@@ -43,6 +43,59 @@ Coming soon!
 
 Coming soon!
 
+## 📂 Structure
+
+The project directory is organised as follows:
+
+```
+BLOCKELECT (Prototype)              # Project root directory
+├── build/                          # Contract build artifacts
+│   └── contracts/
+│       └── VotingSys.json
+├── contracts/                      # Solidity smart contracts
+│   └── VotingSys.sol
+├── dist/                           # Bundled/compiled frontend files for deployment
+│   └── app.bundle.js
+├── migrations/                     # Truffle migration scripts
+│   └── 1_deploy_contracts.js
+├── node_modules/                   # NPM dependencies
+├── src/                            # Application source files
+│   ├── assets/                     # Media assets
+│   │   ├── blockchain.mp4
+│   │   ├── favicon.svg
+│   │   └── logo.svg
+│   ├── css/                        # UI stylesheets
+│   │   ├── alert.css
+│   │   ├── index.css
+│   │   └── official.css
+│   ├── icons/                      # Bootstrap icon set
+│   │   ├── fonts/
+│   │   └── bootstrap-icons.css
+│   ├── js/                         # JavaScript logic files
+│   │   ├── alert.js
+│   │   └── app.js
+│   ├── sounds/                     # Sound effects
+│   │   ├── error.wav
+│   │   ├── info.wav
+│   │   ├── success.wav
+│   │   └── warning.wav
+│   ├── index.html                  # Voter-facing interface
+│   └── official.html               # Official (admin) interface
+├── views/                          # UI screenshots for documentation
+│   ├── commission_dashboard.png
+│   ├── official_detected.png
+│   ├── sign_in.png
+│   ├── voter_detected.png
+│   ├── voting.png
+│   └── wallet_required.png
+├── LICENSE                         # Project license file
+├── package-lock.json               # Locked versions of Node.js dependencies
+├── package.json                    # Project metadata & Node.js package configuration
+├── README.md                       # Project documentation
+├── server.js                       # Backend server (Node.js application entry-point)
+└── truffle-config.js               # Truffle configuration file
+```
+
 ## ⚖️ License
 
 This project is licensed under the MITyoj  License―you are free to use, modify, and distribute of it, with attribution, but without warranty. To see a full breakdown of this license, click [here](./LICENSE).
