@@ -2,12 +2,12 @@
   "name": "blockelect",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Samuel A. Ughili & Joshua U. Ngwuoke",
+  "license": "MIT",
   "dependencies": {
     "truffle": "^5.11.5",
     "web3": "^4.16.0"

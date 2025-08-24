@@ -12,15 +12,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files from public
-app.use(express.static(path.join(__dirname, "public")));
+// Serve static files from src
+app.use(express.static(path.join(__dirname, "src")));
 
 // Serve static files from dist
 app.use("/dist", express.static(path.join(__dirname, "dist")));
 
 // Serve index.html for all routes
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "src", "index.html"));
 });
 
 app.listen(PORT, () => {
