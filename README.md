@@ -4,7 +4,7 @@
 
 Coming soon!
 
-> This is a final year project work at the Department of Computer Science, Plateau State University, Bokkos. The paper would be available after it has been defended.
+> This software was developed as part of a final year project work at the Department of Computer Science, Plateau State University, Bokkos, titled ‘Design and Implementation of a Blockchain-Based Secure Voting System’ by Ughili Samuel Adiwu. The paper would be available here after it has been defended.
 
 ## ⚙️ Features
 
@@ -35,7 +35,7 @@ The following software versions are recommended for deploying this application (
  ![Official Detected (Voting Page)](./views/official_detected.png)
  ![Electoral Commission Dashboard](./views/commission_dashboard.png)
 
-## 📥 Installation/Set Up
+## 📥 Set Up
 
 Coming soon!
 
