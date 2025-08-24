@@ -49,6 +49,7 @@ The project directory is organised as follows:
 
 ```
 BLOCKELECT (Prototype)              # Project root directory
+|
 ├── build/                          # Contract build artifacts
 │   └── contracts/
 │       └── VotingSys.json
