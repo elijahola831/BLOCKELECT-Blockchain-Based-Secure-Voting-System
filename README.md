@@ -20,6 +20,7 @@ The following software versions are recommended for deploying this application (
 
 - Node.js `v22.14.0`
 - Web3.js `v1.10.0`
+- Express.js `v4.17.14`
 - Solidity `v0.8.19` (solc-js)
 - Truffle `v5.11.5` (core: 5.11.5)
 - Ganache GUI `v2.7.1` (or Ganache CLI `v7.9.1`)
