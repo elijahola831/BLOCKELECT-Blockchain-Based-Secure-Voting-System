@@ -9,7 +9,7 @@ module.exports = {
 
     compilers: {
         solc: {
-            version: "0.8.19", // Match your contract
+            version: "0.8.19", // Match contract
             settings: {
                 optimizer: {
                     enabled: true,

@@ -2,7 +2,7 @@
 
 ## 💡 Abstract
 
-Coming soon!
+*Traditional electoral systems exhibit critical vulnerabilities including vote manipulation, centralized points of failure, and compromised transparency that undermine democratic integrity. This research presents a decentralised blockchain-based secure voting system designed to address these challenges. The system employs Ethereum smart contracts written in Solidity to enforce immutable voting rules, Web3.js for blockchain integration, and MetaMask wallet authentication for secure voter verification. The architecture implements dual interfaces for voters and electoral commissions, with distributed consensus mechanisms ensuring real-time transaction validation. Smart contracts automatically enforce electoral rules while maintaining cryptographic immutability of voting transactions. The decentralised design eliminates single points of failure by distributing vote storage and validation across multiple nodes. System validation included unit, integration, system, and security testing. Results show prevention of vote tampering, elimination of double voting, and transparent, auditable election results. Implementation used Truffle framework, Ganache blockchain simulation, and Node.js back-end services following an Agile Prototype-based Iterative Development methodology. This work demonstrates blockchain’s feasibility in creating trustworthy electoral systems, offering a viable solution to electoral fraud and public confidence issues.*
 
 > This software was developed as part of a final year project work at the Department of Computer Science, Plateau State University, Bokkos, titled ‘Design and Implementation of a Blockchain-Based Secure Voting System’ by Ughili Samuel Adiwu. The paper would be available here after it has been defended.
 
@@ -36,13 +36,13 @@ The following software versions are recommended for deploying this application (
  ![Official Detected (Voting Page)](./views/official_detected.png)
  ![Electoral Commission Dashboard](./views/commission_dashboard.png)
 
-## 📥 Set Up
+<!-- ## 📥 Set Up
 
 Coming soon!
 
 ## 🚀 Deployment
 
-Coming soon!
+Coming soon! -->
 
 ## 📂 Structure
 
@@ -105,3 +105,7 @@ This project is licensed under the MITyoj  License―you are free to use, modify
 **Attribution**
 
 All the sound effects included in this project are from Microsoft Windows, which are the property of Microsoft Corporation. These sounds are used for demonstration purposes only and remain subject to Microsoft’s copyright and licensing terms.
+
+---
+
+Give this repository a ⭐ if you like it.
