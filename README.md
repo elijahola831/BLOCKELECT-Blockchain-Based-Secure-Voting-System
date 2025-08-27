@@ -100,7 +100,7 @@ BLOCKELECT (Prototype)              # Project root directory
 
 ## ⚖️ License
 
-This project is licensed under the MITyoj  License―you are free to use, modify, and distribute of it, with attribution, but without warranty. To see a full breakdown of this license, click [here](./LICENSE).
+This project is licensed under the MIT License―you are free to use, modify, and distribute of it, with attribution, but without warranty. To see a full breakdown of this license, click [here](./LICENSE).
 
 **Attribution**
 
