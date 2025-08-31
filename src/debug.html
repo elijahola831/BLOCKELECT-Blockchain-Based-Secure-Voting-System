@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>BLOCKELECT Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: white; }
+        .info { background: #333; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .error { background: #dc3545; }
+        .success { background: #28a745; }
+    </style>
+</head>
+<body>
+    <h1>BLOCKELECT Debug Page</h1>
+    
+    <div id="status" class="info">
+        <h3>Status:</h3>
+        <p id="statusText">Loading...</p>
+    </div>
+
+    <div class="info">
+        <h3>MetaMask Detection:</h3>
+        <p id="metamaskStatus">Checking...</p>
+        <button onclick="connectMetaMask()">Connect MetaMask</button>
+    </div>
+
+    <div class="info">
+        <h3>Network Info:</h3>
+        <p id="networkInfo">Not connected</p>
+    </div>
+
+    <div class="info">
+        <h3>Account Info:</h3>
+        <p id="accountInfo">No account connected</p>
+    </div>
+
+    <div class="info">
+        <h3>Contract Status:</h3>
+        <p id="contractStatus">Not checked</p>
+        <button onclick="testContract()">Test Contract</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.4/dist/web3.min.js"></script>
+    <script>
+        let web3;
+        let account;
+
+        async function updateStatus() {
+            const statusEl = document.getElementById('statusText');
+            const metamaskEl = document.getElementById('metamaskStatus');
+            
+            if (typeof window.ethereum !== 'undefined') {
+                metamaskEl.innerHTML = '✅ MetaMask detected';
+                web3 = new Web3(window.ethereum);
+                
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        account = accounts[0];
+                        document.getElementById('accountInfo').innerHTML = `Connected: ${account}`;
+                        await updateNetworkInfo();
+                    } else {
+                        document.getElementById('accountInfo').innerHTML = 'No accounts connected';
+                    }
+                } catch (error) {
+                    console.error('Error checking accounts:', error);
+                }
+            } else {
+                metamaskEl.innerHTML = '❌ MetaMask not detected';
+            }
+        }
+
+        async function connectMetaMask() {
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                account = accounts[0];
+                document.getElementById('accountInfo').innerHTML = `Connected: ${account}`;
+                await updateNetworkInfo();
+            } catch (error) {
+                document.getElementById('accountInfo').innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        async function updateNetworkInfo() {
+            try {
+                const networkId = await web3.eth.net.getId();
+                const chainId = await web3.eth.getChainId();
+                
+                document.getElementById('networkInfo').innerHTML = `
+                    Network ID: ${networkId}<br>
+                    Chain ID: ${chainId}<br>
+                    Expected: 1337
+                `;
+
+                if (Number(chainId) === 1337) {
+                    document.getElementById('networkInfo').className = 'info success';
+                } else {
+                    document.getElementById('networkInfo').className = 'info error';
+                }
+            } catch (error) {
+                document.getElementById('networkInfo').innerHTML = `Error: ${error.message}`;
+                document.getElementById('networkInfo').className = 'info error';
+            }
+        }
+
+        async function testContract() {
+            if (!account) {
+                alert('Please connect MetaMask first');
+                return;
+            }
+
+            try {
+                // Load contract
+                const response = await fetch('/build/contracts/VotingSys.json');
+                const contractJSON = await response.json();
+                
+                const networkId = await web3.eth.net.getId();
+                const deployedNetwork = contractJSON.networks[networkId];
+                
+                if (!deployedNetwork) {
+                    document.getElementById('contractStatus').innerHTML = `❌ Contract not deployed on network ${networkId}`;
+                    document.getElementById('contractStatus').className = 'info error';
+                    return;
+                }
+
+                const contract = new web3.eth.Contract(contractJSON.abi, deployedNetwork.address);
+                
+                // Test contract calls
+                const owner = await contract.methods.owner().call();
+                const isOfficial = await contract.methods.officials(account).call();
+                
+                document.getElementById('contractStatus').innerHTML = `
+                    ✅ Contract loaded successfully<br>
+                    Address: ${deployedNetwork.address}<br>
+                    Owner: ${owner}<br>
+                    Your account is official: ${isOfficial}<br>
+                    Connected account: ${account}
+                `;
+                document.getElementById('contractStatus').className = 'info success';
+                
+            } catch (error) {
+                document.getElementById('contractStatus').innerHTML = `❌ Error: ${error.message}`;
+                document.getElementById('contractStatus').className = 'info error';
+                console.error('Contract test error:', error);
+            }
+        }
+
+        // Initialize
+        updateStatus();
+    </script>
+</body>
+</html>

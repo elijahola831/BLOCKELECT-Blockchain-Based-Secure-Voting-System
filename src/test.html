@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Simple MetaMask Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: white; }
+        button { padding: 15px 30px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; }
+        button:hover { background: #0056b3; }
+        .info { background: #333; padding: 15px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Simple MetaMask Connection Test</h1>
+    
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="forceConnect()">Force Connect</button>
+    
+    <div id="results" class="info">
+        <p>Click a button to test...</p>
+    </div>
+
+    <script>
+        function log(message) {
+            const results = document.getElementById('results');
+            results.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+
+        function testConnection() {
+            document.getElementById('results').innerHTML = '<p>Testing...</p>';
+            
+            log('1. Checking if window.ethereum exists: ' + (typeof window.ethereum !== 'undefined'));
+            
+            if (typeof window.ethereum !== 'undefined') {
+                log('2. MetaMask detected!');
+                log('3. Ethereum object: ' + JSON.stringify(Object.keys(window.ethereum)));
+                
+                // Check current accounts
+                window.ethereum.request({ method: 'eth_accounts' })
+                    .then(accounts => {
+                        log('4. Current accounts: ' + JSON.stringify(accounts));
+                        if (accounts.length > 0) {
+                            log('5. Connected account: ' + accounts[0]);
+                            getNetworkInfo();
+                        } else {
+                            log('5. No accounts connected');
+                        }
+                    })
+                    .catch(error => {
+                        log('4. Error getting accounts: ' + error.message);
+                    });
+            } else {
+                log('2. MetaMask NOT detected!');
+            }
+        }
+
+        function forceConnect() {
+            document.getElementById('results').innerHTML = '<p>Force connecting...</p>';
+            
+            if (typeof window.ethereum !== 'undefined') {
+                log('1. Requesting account access...');
+                window.ethereum.request({ method: 'eth_requestAccounts' })
+                    .then(accounts => {
+                        log('2. Connected! Account: ' + accounts[0]);
+                        getNetworkInfo();
+                    })
+                    .catch(error => {
+                        log('2. Connection failed: ' + error.message);
+                    });
+            } else {
+                log('1. MetaMask not available!');
+            }
+        }
+
+        function getNetworkInfo() {
+            if (typeof window.ethereum !== 'undefined') {
+                // Get network info
+                Promise.all([
+                    window.ethereum.request({ method: 'net_version' }),
+                    window.ethereum.request({ method: 'eth_chainId' })
+                ]).then(([networkId, chainId]) => {
+                    log('Network ID: ' + networkId);
+                    log('Chain ID: ' + parseInt(chainId, 16));
+                    log('Expected Chain ID: 1337');
+                    
+                    if (parseInt(chainId, 16) === 1337) {
+                        log('✅ Correct network!');
+                    } else {
+                        log('❌ Wrong network! Please switch to Ganache Local (Chain ID 1337)');
+                    }
+                }).catch(error => {
+                    log('Error getting network info: ' + error.message);
+                });
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            log('Page loaded, auto-testing...');
+            testConnection();
+        });
+    </script>
+</body>
+</html>
