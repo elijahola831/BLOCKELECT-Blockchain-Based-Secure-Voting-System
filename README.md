@@ -36,13 +36,119 @@ The following software versions are recommended for deploying this application (
  ![Official Detected (Voting Page)](./views/official_detected.png)
  ![Electoral Commission Dashboard](./views/commission_dashboard.png)
 
-<!-- ## 📥 Set Up
+## 📥 Set Up
 
-Coming soon!
+### Prerequisites
+1. **Node.js** (v22.14.0 or higher)
+2. **Git** for version control
+3. **MetaMask** browser extension
+4. **Ganache** for local blockchain simulation
+
+### Installation Steps
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/elijahola831/BLOCKELECT-Blockchain-Based-Secure-Voting-System.git
+   cd BLOCKELECT-Blockchain-Based-Secure-Voting-System
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start Ganache (Local Blockchain):**
+   ```bash
+   # Option 1: Using npm script
+   npm run ganache
+   
+   # Option 2: Using Ganache GUI
+   # Download and run Ganache GUI with these settings:
+   # - Port: 7545
+   # - Network ID: 1337
+   # - Accounts: 10
+   ```
+
+4. **Compile Smart Contracts:**
+   ```bash
+   npm run compile
+   ```
+
+5. **Deploy Contracts to Local Network:**
+   ```bash
+   npm run migrate
+   ```
+
+6. **Bundle Frontend Assets:**
+   ```bash
+   npm run bundle
+   ```
+
+7. **Start the Application Server:**
+   ```bash
+   npm start
+   # Server will run at http://localhost:3000
+   ```
+
+### MetaMask Configuration
+
+1. Install MetaMask browser extension
+2. Add local Ganache network:
+   - **Network Name:** Ganache Local
+   - **RPC URL:** http://127.0.0.1:7545
+   - **Chain ID:** 1337
+   - **Currency Symbol:** ETH
+3. Import test accounts using private keys from Ganache
 
 ## 🚀 Deployment
 
-Coming soon! -->
+### Development Mode
+```bash
+# Start with auto-restart on file changes
+npm run dev
+```
+
+### Testing
+```bash
+# Ensure Ganache is running first
+npm test
+```
+
+### Production Deployment
+
+1. **Build the project:**
+   ```bash
+   npm run build
+   ```
+
+2. **Deploy to Ethereum Testnet/Mainnet:**
+   - Update `truffle-config.js` with your network configuration
+   - Add your private key and Infura/Alchemy endpoint
+   - Run migrations:
+     ```bash
+     truffle migrate --network <network_name>
+     ```
+
+3. **Deploy the web server:**
+   - The application can be deployed to any Node.js hosting platform
+   - Ensure all environment variables are properly configured
+   - Update contract addresses in the frontend if deployed to different networks
+
+### Usage Instructions
+
+**For Voters:**
+1. Visit http://localhost:3000
+2. Connect MetaMask wallet
+3. Select a candidate from the list
+4. Cast your vote (requires gas fee)
+
+**For Electoral Officials:**
+1. Visit http://localhost:3000/official.html
+2. Connect MetaMask wallet (must be the contract deployer)
+3. Register candidates
+4. Set election start/end dates
+5. Monitor election progress
+6. Reset election if needed
 
 ## 📂 Structure
 

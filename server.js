@@ -18,6 +18,9 @@ app.use(express.static(path.join(__dirname, "src")));
 // Serve static files from dist
 app.use("/dist", express.static(path.join(__dirname, "dist")));
 
+// Serve build contracts for Web3 access
+app.use("/build", express.static(path.join(__dirname, "build")));
+
 // Serve index.html for all routes
 app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "src", "index.html"));

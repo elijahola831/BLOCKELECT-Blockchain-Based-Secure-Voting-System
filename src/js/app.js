@@ -1,11 +1,21 @@
-import Web3 from "web3";
-import VotingSysJSON from "../../build/contracts/VotingSys.json";
+// Import Web3 - using v1.x for better compatibility
+const Web3 = window.Web3;
+
+// Contract ABI and networks will be loaded dynamically
+let VotingSysJSON = null;
 
 const App = {
     web3: null,
     account: null,
     contract: null,
     selectedCandidate: null,
+    networkConfig: {
+        ganache: {
+            chainId: 1337,
+            rpcUrl: 'http://127.0.0.1:7545',
+            networkName: 'Ganache Local'
+        }
+    },
 
     // Helper function to manage page states
     showPage: function (pageToShow) {
@@ -16,6 +26,21 @@ const App = {
                 element.style.display = pageId === pageToShow ? 'block' : 'none';
             }
         });
+    },
+
+    // Load contract JSON
+    loadContractJSON: async function() {
+        try {
+            const response = await fetch('/build/contracts/VotingSys.json');
+            if (!response.ok) {
+                throw new Error('Contract JSON not found. Please compile and deploy the contracts first.');
+            }
+            VotingSysJSON = await response.json();
+            console.log('Contract JSON loaded:', VotingSysJSON);
+        } catch (err) {
+            console.error('Error loading contract JSON:', err);
+            throw new Error('Failed to load contract. Please ensure contracts are compiled and deployed.');
+        }
     },
 
     // Create and inject sign-in HTML
@@ -30,15 +55,24 @@ const App = {
             signInElement.innerHTML = `
         <h1>Welcome!</h1>
         <button id="signInBtn">Sign In with MetaMask</button>
+        <div id="networkHelp" style="display: none; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <h3>Network Setup Required</h3>
+            <p>Please add the Ganache network to MetaMask:</p>
+            <ul style="text-align: left; margin: 10px 0;">
+                <li><strong>Network Name:</strong> Ganache Local</li>
+                <li><strong>RPC URL:</strong> http://127.0.0.1:7545</li>
+                <li><strong>Chain ID:</strong> 1337</li>
+                <li><strong>Currency:</strong> ETH</li>
+            </ul>
+            <button id="retryConnection">Retry Connection</button>
+        </div>
       `;
 
             // Insert at the beginning of the body or after a specific element
             const targetElement = document.getElementById("page");
             if (targetElement) {
                 targetElement.parentNode.insertBefore(signInElement, targetElement.nextSibling);
-            } //else {
-            //     document.body.appendChild(signInElement);
-            //   }
+            }
         }
 
         // Ensure it's initially hidden
@@ -182,18 +216,40 @@ const App = {
             acctAddressElement.innerText = App.account;
         }
 
+        // Load contract JSON if not already loaded
+        if (!VotingSysJSON) {
+            await App.loadContractJSON();
+        }
+
         const networkId = await App.web3.eth.net.getId();
         const chainId = await App.web3.eth.getChainId();
         console.log("NetworkId:", networkId);
         console.log("chainId:", chainId);
-        console.log("VotingSysJSON networks:", VotingSysJSON.networks);
-        const deployedNetwork = VotingSysJSON.networks[networkId];
-
-        if (chainId !== 1337n) {
+        console.log("VotingSysJSON networks:", VotingSysJSON ? VotingSysJSON.networks : null);
+        
+        // Check if we're on the correct network
+        if (Number(chainId) !== 1337) {
+            // Show network help
+            const networkHelp = document.getElementById("networkHelp");
+            if (networkHelp) {
+                networkHelp.style.display = "block";
+            }
+            
+            // Setup retry button
+            const retryBtn = document.getElementById("retryConnection");
+            if (retryBtn) {
+                retryBtn.onclick = () => {
+                    window.location.reload();
+                };
+            }
+            
             throw new Error(`Wrong network detected. Please switch to Ganache (Chain ID 1337).`);
         }
 
-        if (!deployedNetwork) throw new Error(`Contract not deployed on this network (ID: ${networkId})`);
+        const deployedNetwork = VotingSysJSON.networks[networkId];
+        if (!deployedNetwork) {
+            throw new Error(`Contract not deployed on this network (ID: ${networkId}). Please deploy the contract first.`);
+        }
 
         App.contract = new App.web3.eth.Contract(VotingSysJSON.abi, deployedNetwork.address);
         console.log("Contract initialized:", App.contract.options.address);
