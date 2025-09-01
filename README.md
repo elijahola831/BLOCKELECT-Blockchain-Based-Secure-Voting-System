@@ -39,19 +39,20 @@ The following software versions are recommended for deploying this application (
 ## 📥 Set Up
 
 ### Prerequisites
-1. **Node.js** (v22.14.0 or higher)
-2. **Git** for version control
-3. **MetaMask** browser extension
-4. **Ganache** for local blockchain simulation (included via npm)
+1. **Node.js** (v22.14.0 or higher) - [Download here](https://nodejs.org/)
+2. **MetaMask** browser extension - [Install here](https://metamask.io/)
+3. **Git** (optional, only needed if cloning repository)
+4. **Ganache** for local blockchain simulation (automatically installed via npm)
 
 ### 🚀 Quick Setup (Recommended)
 
-**Automated Setup:**
+**Option 1: Download ZIP (Most Common)**
+1. Go to the [GitHub repository](https://github.com/elijahola831/BLOCKELECT-Blockchain-Based-Secure-Voting-System)
+2. Click the green **"Code"** button → **"Download ZIP"**
+3. Extract the ZIP file to your desired location
+4. Open terminal/command prompt in the extracted folder
+5. Run these commands:
 ```bash
-# Clone and navigate to the repository
-git clone https://github.com/elijahola831/BLOCKELECT-Blockchain-Based-Secure-Voting-System.git
-cd BLOCKELECT-Blockchain-Based-Secure-Voting-System
-
 # Install dependencies
 npm install
 
@@ -62,15 +63,30 @@ npm run setup
 npm start
 ```
 
+**Option 2: Git Clone (For Developers)**
+```bash
+# Clone and navigate to the repository
+git clone https://github.com/elijahola831/BLOCKELECT-Blockchain-Based-Secure-Voting-System.git
+cd BLOCKELECT-Blockchain-Based-Secure-Voting-System
+
+# Install dependencies
+npm install
+
+# Run automated setup
+npm run setup
+
+# Start the web server
+npm start
+```
+
 ### 📋 Manual Setup (Step by Step)
 
 If you prefer to run each step manually:
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/elijahola831/BLOCKELECT-Blockchain-Based-Secure-Voting-System.git
-   cd BLOCKELECT-Blockchain-Based-Secure-Voting-System
-   ```
+1. **Download the project:**
+   - **Option A (ZIP):** Download ZIP from GitHub, extract to your desired location
+   - **Option B (Git):** `git clone https://github.com/elijahola831/BLOCKELECT-Blockchain-Based-Secure-Voting-System.git`
+   - Navigate to the project folder using terminal/command prompt
 
 2. **Install dependencies:**
    ```bash
