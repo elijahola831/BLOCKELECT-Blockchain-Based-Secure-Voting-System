@@ -42,9 +42,29 @@ The following software versions are recommended for deploying this application (
 1. **Node.js** (v22.14.0 or higher)
 2. **Git** for version control
 3. **MetaMask** browser extension
-4. **Ganache** for local blockchain simulation
+4. **Ganache** for local blockchain simulation (included via npm)
 
-### Installation Steps
+### 🚀 Quick Setup (Recommended)
+
+**Automated Setup:**
+```bash
+# Clone and navigate to the repository
+git clone https://github.com/elijahola831/BLOCKELECT-Blockchain-Based-Secure-Voting-System.git
+cd BLOCKELECT-Blockchain-Based-Secure-Voting-System
+
+# Install dependencies
+npm install
+
+# Run automated setup (starts Ganache, compiles & deploys contracts, bundles frontend)
+npm run setup
+
+# Start the web server
+npm start
+```
+
+### 📋 Manual Setup (Step by Step)
+
+If you prefer to run each step manually:
 
 1. **Clone the repository:**
    ```bash
@@ -59,17 +79,13 @@ The following software versions are recommended for deploying this application (
 
 3. **Start Ganache (Local Blockchain):**
    ```bash
-   # Option 1: Using npm script
+   # Using npm script (recommended)
    npm run ganache
    
-   # Option 2: Using Ganache GUI
-   # Download and run Ganache GUI with these settings:
-   # - Port: 7545
-   # - Network ID: 1337
-   # - Accounts: 10
+   # Wait for "Listening on 127.0.0.1:7545" message
    ```
 
-4. **Compile Smart Contracts:**
+4. **In a new terminal, compile Smart Contracts:**
    ```bash
    npm run compile
    ```
@@ -90,15 +106,130 @@ The following software versions are recommended for deploying this application (
    # Server will run at http://localhost:3000
    ```
 
-### MetaMask Configuration
+### 🔗 MetaMask Configuration
 
-1. Install MetaMask browser extension
-2. Add local Ganache network:
-   - **Network Name:** Ganache Local
-   - **RPC URL:** http://127.0.0.1:7545
-   - **Chain ID:** 1337
-   - **Currency Symbol:** ETH
-3. Import test accounts using private keys from Ganache
+**Step 1: Install MetaMask**
+- Install the MetaMask browser extension from [metamask.io](https://metamask.io)
+
+**Step 2: Add Ganache Local Network**
+1. Open MetaMask → Click network dropdown → "Add Network" or "Custom RPC"
+2. Enter these **exact** values:
+   - **Network Name:** `Ganache Local`
+   - **New RPC URL:** `http://127.0.0.1:7545`
+   - **Chain ID:** `1337`
+   - **Currency Symbol:** `ETH`
+   - **Block Explorer URL:** (leave empty)
+3. Click "Save"
+
+**Step 3: Import Test Account**
+1. In MetaMask: Account menu → "Import Account"
+2. Select "Private Key"
+3. Enter this test private key:
+   ```
+   0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d
+   ```
+4. Click "Import" - you should see ~100 ETH balance
+
+**Step 4: Switch to Ganache Network**
+1. Click network dropdown in MetaMask
+2. Select "Ganache Local"
+3. Verify you're connected to the imported account
+
+## 🔧 Troubleshooting
+
+### Common Issues and Solutions
+
+**1. "Failed to authenticate to MetaMask" Error**
+- **Cause:** MetaMask not connected to the correct network or account
+- **Solution:**
+  ```bash
+  # 1. Ensure Ganache is running
+  npm run ganache
+  
+  # 2. Check MetaMask network settings match exactly:
+  #    - Network: Ganache Local
+  #    - RPC URL: http://127.0.0.1:7545
+  #    - Chain ID: 1337
+  
+  # 3. Reset MetaMask connection:
+  #    MetaMask → Settings → Advanced → Reset Account
+  ```
+
+**2. "Out of Gas" or "Invalid ABI" Error**
+- **Cause:** Smart contracts not deployed or deployed to wrong network
+- **Solution:**
+  ```bash
+  # 1. Restart Ganache (this creates a fresh blockchain)
+  # Stop existing Ganache and run:
+  npm run ganache
+  
+  # 2. In new terminal, redeploy contracts:
+  npm run migrate
+  
+  # 3. Restart the web server:
+  npm start
+  ```
+
+**3. Port Already in Use**
+- **Cause:** Previous Ganache instance still running
+- **Solution (Windows):**
+  ```powershell
+  # Find and kill processes using ports 7545 or 3000
+  netstat -ano | findstr ":7545\|:3000"
+  taskkill /PID <process_id> /F
+  ```
+- **Solution (Mac/Linux):**
+  ```bash
+  # Kill processes using the ports
+  lsof -ti:7545 | xargs kill -9
+  lsof -ti:3000 | xargs kill -9
+  ```
+
+**4. "Cannot find module" Errors**
+- **Cause:** Dependencies not installed properly
+- **Solution:**
+  ```bash
+  # Clean install dependencies
+  rm -rf node_modules package-lock.json
+  npm install
+  ```
+
+**5. MetaMask "Nonce too high" Error**
+- **Cause:** MetaMask nonce mismatch with fresh Ganache blockchain
+- **Solution:**
+  1. MetaMask → Settings → Advanced → Reset Account
+  2. This clears transaction history and resets nonce
+
+**6. "ECONNREFUSED" Connection Error**
+- **Cause:** Ganache not running or wrong port configuration
+- **Solution:**
+  ```bash
+  # 1. Verify Ganache is running:
+  npm run ganache
+  
+  # 2. Check if port 7545 is accessible:
+  # Windows: telnet 127.0.0.1 7545
+  # Mac/Linux: nc -zv 127.0.0.1 7545
+  
+  # 3. Verify truffle-config.js has correct port (7545)
+  ```
+
+### Quick Reset (Nuclear Option)
+If all else fails, complete reset:
+```bash
+# 1. Stop all processes
+# 2. Clear everything and restart
+rm -rf node_modules build dist/app.bundle.js
+npm install
+npm run setup
+npm start
+```
+
+### Getting Help
+- Check the browser console for detailed error messages
+- Verify MetaMask is unlocked and connected to correct network
+- Ensure you have sufficient ETH in your MetaMask account (should be ~100 ETH with test account)
+- Try the automated setup script: `npm run setup`
 
 ## 🚀 Deployment
 

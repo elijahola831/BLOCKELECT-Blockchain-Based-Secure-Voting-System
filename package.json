@@ -11,7 +11,8 @@
     "migrate": "truffle migrate --network development --reset",
     "bundle": "browserify src/js/app.js -o dist/app.bundle.js -t babelify",
     "ganache": "ganache --port 7545 --networkId 1337 --deterministic --accounts 10 --miner.blockGasLimit 10000000",
-    "test": "truffle test"
+    "test": "truffle test",
+    "setup": "node setup.js"
   },
   "author": "Samuel A. Ughili & Joshua U. Ngwuoke",
   "license": "MIT",
