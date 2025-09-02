@@ -26,6 +26,9 @@ app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "src", "index.html"));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running successfully!`);
+    console.log(`📱 Local access: http://localhost:${PORT}`);
+    console.log(`🌐 Network access: http://10.112.74.78:${PORT}`);
+    console.log(`📋 Use the network URL to access from phones/other devices`);
 });
