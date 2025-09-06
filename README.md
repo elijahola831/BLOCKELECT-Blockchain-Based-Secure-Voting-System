@@ -120,6 +120,7 @@ If you prefer to run each step manually:
    ```bash
    npm start
    # Server will run at http://localhost:3000
+   # Also accessible from other devices on your network
    ```
 
 ### 🔗 MetaMask Configuration

@@ -19,7 +19,11 @@
   "dependencies": {
     "express": "^4.21.0",
     "truffle": "^5.11.5",
-    "web3": "^1.10.4"
+    "web3": "^1.10.4",
+    "chart.js": "^4.4.0",
+    "ipfs-http-client": "^60.0.1",
+    "circomlib": "^2.0.5",
+    "snarkjs": "^0.7.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
