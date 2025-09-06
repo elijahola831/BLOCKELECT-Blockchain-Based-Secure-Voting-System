@@ -7,6 +7,8 @@ class AnalyticsDashboard {
         this.charts = {};
         this.previousVoteCount = 0;
         this.activityHistory = [];
+        this.socket = null;
+        this.isRealTimeEnabled = false;
         
         this.init();
     }
@@ -16,6 +18,7 @@ class AnalyticsDashboard {
             await this.initWeb3();
             await this.initContract();
             await this.initCharts();
+            await this.initWebSocket();
             await this.loadInitialData();
             this.startRealTimeUpdates();
             
@@ -50,9 +53,64 @@ class AnalyticsDashboard {
                 contractData.abi,
                 contractData.address
             );
+            console.log('📜 Smart contract initialized successfully');
         } catch (error) {
             console.error('Contract initialization failed:', error);
             throw error;
+        }
+    }
+
+    async initWebSocket() {
+        try {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host;
+            
+            this.socket = io(`${window.location.protocol}//${host}`, {
+                transports: ['websocket', 'polling']
+            });
+            
+            this.socket.on('connect', () => {
+                console.log('📡 WebSocket connected for real-time updates');
+                this.socket.emit('join-analytics');
+                this.isRealTimeEnabled = true;
+                this.addActivityItem('Real-time updates enabled', 'success');
+            });
+            
+            this.socket.on('disconnect', () => {
+                console.log('📡 WebSocket disconnected');
+                this.isRealTimeEnabled = false;
+                this.addActivityItem('Real-time updates disabled', 'warning');
+            });
+            
+            // Listen for vote updates
+            this.socket.on('voteUpdate', (data) => {
+                console.log('🗳️ Real-time vote update received:', data);
+                this.handleRealTimeVoteUpdate(data);
+            });
+            
+            // Listen for election events
+            this.socket.on('electionStarted', (data) => {
+                console.log('🚀 Election started event:', data);
+                this.addActivityItem('Election has started!', 'success');
+                // Refresh data to get updated election dates
+                setTimeout(() => this.loadInitialData(), 1000);
+            });
+            
+            // Listen for candidate updates
+            this.socket.on('candidateAdded', (data) => {
+                console.log('👤 Candidate added event:', data);
+                this.addActivityItem(`New candidate added: ${data.candidateName} (${data.party})`, 'info');
+                this.updateCandidateData(data.candidates);
+            });
+            
+            this.socket.on('connect_error', (error) => {
+                console.error('WebSocket connection error:', error);
+                this.addActivityItem('Failed to establish real-time connection', 'error');
+            });
+            
+        } catch (error) {
+            console.error('WebSocket initialization failed:', error);
+            this.addActivityItem('Real-time updates unavailable', 'warning');
         }
     }
 
@@ -404,8 +462,21 @@ class AnalyticsDashboard {
     }
 
     startRealTimeUpdates() {
+        // Use longer polling interval when WebSocket is active for efficiency
+        const pollingInterval = this.isRealTimeEnabled ? 30000 : 5000; // 30s with WebSocket, 5s without
+        
         this.updateInterval = setInterval(async () => {
             try {
+                // Skip if real-time updates are working
+                if (this.isRealTimeEnabled) {
+                    // Only update election dates and time remaining for polling when WebSocket is active
+                    const electionDates = await this.getElectionDates();
+                    this.updateTimeRemaining(electionDates.startDate, electionDates.endDate);
+                    document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+                    return;
+                }
+                
+                // Full update when WebSocket is not available
                 const [candidates, totalVotes, electionDates] = await Promise.all([
                     this.contract.methods.getCandidates().call(),
                     this.contract.methods.getTotalVotes().call(),
@@ -437,12 +508,57 @@ class AnalyticsDashboard {
                 console.error('Error updating dashboard:', error);
                 this.addActivityItem('Error updating data from blockchain', 'error');
             }
-        }, 5000); // Update every 5 seconds
+        }, pollingInterval);
+        
+        console.log(`🔄 Polling started with ${pollingInterval/1000}s interval (WebSocket: ${this.isRealTimeEnabled ? 'enabled' : 'disabled'})`);
+    }
+
+    handleRealTimeVoteUpdate(data) {
+        try {
+            // Update metrics
+            this.updateMetrics({
+                totalVotes: data.totalVotes,
+                candidateCount: data.candidates.names.length
+            });
+            
+            // Update charts with new data
+            this.updateVoteDistributionChart(data.candidates);
+            this.updateResultsTable(data.candidates);
+            this.updateActivityChart(data.totalVotes);
+            
+            // Add activity item
+            const newVotes = data.totalVotes - (data.previousTotal || this.previousVoteCount);
+            this.addActivityItem(`${newVotes} new vote${newVotes > 1 ? 's' : ''} cast`, 'success');
+            
+            // Update previous vote count
+            this.previousVoteCount = data.totalVotes;
+            
+        } catch (error) {
+            console.error('Error handling real-time vote update:', error);
+            this.addActivityItem('Error processing real-time update', 'error');
+        }
+    }
+    
+    updateCandidateData(candidates) {
+        try {
+            this.updateVoteDistributionChart(candidates);
+            this.updateResultsTable(candidates);
+            
+            // Update candidate count
+            document.getElementById('total-candidates').textContent = candidates.names.length;
+            
+        } catch (error) {
+            console.error('Error updating candidate data:', error);
+        }
     }
 
     stop() {
         if (this.updateInterval) {
             clearInterval(this.updateInterval);
+        }
+        
+        if (this.socket) {
+            this.socket.disconnect();
         }
     }
 }
