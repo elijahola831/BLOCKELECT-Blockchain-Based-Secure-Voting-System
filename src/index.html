@@ -37,6 +37,18 @@
                     </p>
                     <p id="acctType"></p>
                 </div>
+                <!-- Biometric Authentication Button -->
+                <div style="margin-top: 15px; text-align: center;">
+                    <button id="biometric-btn" 
+                            style="background: linear-gradient(45deg, #007bff, #0056b3); color: white; 
+                                   border: none; padding: 10px 20px; border-radius: 25px; font-weight: bold; 
+                                   cursor: pointer; box-shadow: 0 3px 10px rgba(0,123,255,0.3); 
+                                   transition: all 0.3s ease; font-size: 14px;"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,123,255,0.4)'"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 10px rgba(0,123,255,0.3)'">
+                        🔐 Enable Biometric Login
+                    </button>
+                </div>
             </div>
 
             <div id="candidate" class="container">
@@ -104,6 +116,47 @@
     <script src="js/metamask-fix.js"></script>
     <script src="js/simple-metamask.js"></script>
     <script src="js/emergency-bypass.js"></script>
+    <script src="js/biometric-auth.js"></script>
+    <script src="js/voting-debug.js"></script>
+    <script src="js/quick-setup.js"></script>
+    <script src="js/voting-fix.js"></script>
+    
+    <!-- Inline Debug Helper for immediate use -->
+    <script>
+        // Simple debug function available immediately
+        window.debugVoting = function() {
+            console.log('=== BLOCKELECT VOTING DEBUG ===');
+            console.log('1. App available:', typeof App !== 'undefined');
+            console.log('2. App.account:', App?.account || 'Not connected');
+            console.log('3. App.contract:', App?.contract ? 'Initialized' : 'Not initialized');
+            console.log('4. App.selectedCandidate:', App?.selectedCandidate);
+            console.log('5. MetaMask:', typeof window.ethereum !== 'undefined' ? 'Available' : 'Not found');
+            
+            if (App?.contract && App?.account) {
+                App.contract.methods.startDate().call().then(startDate => {
+                    App.contract.methods.endDate().call().then(endDate => {
+                        const now = Math.floor(Date.now() / 1000);
+                        console.log('6. Election Dates:');
+                        console.log('   Start:', Number(startDate), new Date(Number(startDate) * 1000));
+                        console.log('   End:', Number(endDate), new Date(Number(endDate) * 1000));
+                        console.log('   Now:', now, new Date(now * 1000));
+                        console.log('   Active:', now >= Number(startDate) && now <= Number(endDate));
+                        console.log('   Dates Set:', Number(startDate) > 0 && Number(endDate) > 0);
+                    });
+                });
+            }
+            console.log('=== Run debugVoting() anytime for status ===');
+        };
+        
+        // Auto-run after page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof App !== 'undefined') {
+                    console.log('🔧 Debug helper loaded. Run debugVoting() for system status.');
+                }
+            }, 3000);
+        });
+    </script>
     
     <!-- PWA Service Worker Registration -->
     <script>

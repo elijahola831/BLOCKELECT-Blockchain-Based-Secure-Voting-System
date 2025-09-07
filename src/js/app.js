@@ -620,73 +620,121 @@ const App = {
     },
 
     selectCandidate: function (index, name, party) {
+        console.log(`[CANDIDATE] Selecting candidate ${index}: ${name} (${party})`);
         App.selectedCandidate = index;
 
         // Remove previous selections
         const rows = document.querySelectorAll("#boxCandidate tr");
-        rows.forEach(row => row.classList.remove("selected"));
+        rows.forEach((row, i) => {
+            row.classList.remove("selected");
+            if (i === index) {
+                console.log(`[CANDIDATE] Highlighting row ${i}`);
+            }
+        });
 
         // Highlight selected row
-        rows[index].classList.add("selected");
+        if (rows[index]) {
+            rows[index].classList.add("selected");
+            console.log(`[CANDIDATE] Selected row class added`);
+        }
 
         // Show vote section and enable button
-        document.getElementById("vote").style.display = "block";
-        document.getElementById("cantVote").style.display = "none";
-        document.getElementById("voteButton").disabled = false;
+        const voteSection = document.getElementById("vote");
+        const cantVoteSection = document.getElementById("cantVote");
+        const voteButton = document.getElementById("voteButton");
+        
+        if (voteSection) {
+            voteSection.style.display = "block";
+            console.log(`[CANDIDATE] Vote section displayed`);
+        }
+        
+        if (cantVoteSection) {
+            cantVoteSection.style.display = "none";
+        }
+        
+        if (voteButton) {
+            voteButton.disabled = false;
+            console.log(`[CANDIDATE] Vote button enabled`);
+        }
 
         Alert.show(
             "info",
             "hand-index-fill",
             "Candidate Selected!",
-            `You selected ${name} of the ${party} political party.`
+            `You selected ${name} of the ${party} political party. Click 'Cast Vote' to submit your vote.`
         );
+        
+        console.log(`[CANDIDATE] Selection complete. selectedCandidate = ${App.selectedCandidate}`);
     },
 
     vote: async function () {
+        console.log("[VOTE] Starting vote process...");
+        console.log("[VOTE] Contract:", App.contract ? "✅ Available" : "❌ Missing");
+        console.log("[VOTE] Account:", App.account || "❌ Missing");
+        console.log("[VOTE] Selected Candidate:", App.selectedCandidate);
+
         if (!App.contract || !App.account) {
+            console.error("[VOTE] Contract or account missing");
             Alert.show("warning", "box-arrow-right", "Citizen Signed Out!", "You signed out of BLOCKELECT. Reconnect to MetaMask wallet to sign in again.");
             return;
         }
-        if (App.selectedCandidate === null) {
+        if (App.selectedCandidate === null || App.selectedCandidate === undefined) {
+            console.error("[VOTE] No candidate selected");
             Alert.show("warning", "person-fill-x", "No Candidate Selected!", "Please select a candidate before voting.");
             return;
         }
 
         // Pre-flight checks before voting
         try {
-            console.log("Performing pre-flight checks...");
+            console.log("[VOTE] Performing comprehensive pre-flight checks...");
 
             // Check if already voted
+            console.log("[VOTE] Checking if user has already voted...");
             const hasVoted = await App.contract.methods.hasVoted(App.account).call();
-            console.log("Has already voted:", hasVoted);
+            console.log(`[VOTE] Has already voted: ${hasVoted}`);
 
             if (hasVoted) {
+                console.error("[VOTE] User has already voted - aborting");
                 Alert.show("warning", "check-circle-fill", "Already Voted!", "You have already cast your vote in this election.");
                 return;
             }
 
             // Check election dates
+            console.log("[VOTE] Checking election timing...");
             const startDate = await App.contract.methods.startDate().call();
             const endDate = await App.contract.methods.endDate().call();
             const currentTime = Math.floor(Date.now() / 1000);
 
-            console.log("Election timing:", {
+            const timingInfo = {
                 startDate: Number(startDate),
                 endDate: Number(endDate),
                 currentTime: currentTime,
+                startDateReadable: new Date(Number(startDate) * 1000).toString(),
+                endDateReadable: new Date(Number(endDate) * 1000).toString(),
                 electionStarted: currentTime >= Number(startDate),
-                electionEnded: currentTime > Number(endDate)
-            });
+                electionEnded: currentTime > Number(endDate),
+                datesSet: Number(startDate) > 0 && Number(endDate) > 0
+            };
+            
+            console.log("[VOTE] Election timing:", timingInfo);
+
+            if (!timingInfo.datesSet) {
+                console.error("[VOTE] Election dates not set - aborting");
+                Alert.show("warning", "calendar-x", "Election Not Configured!", "The election dates have not been set yet. Please contact an official to configure the election.");
+                return;
+            }
 
             if (currentTime < Number(startDate)) {
+                console.error("[VOTE] Election not started yet - aborting");
                 const startDateObj = new Date(Number(startDate) * 1000);
-                Alert.show("warning", "calendar-x", "Election Not Started!", `The election has not started yet. It begins on ${startDateObj.toLocaleDateString()}.`);
+                Alert.show("warning", "calendar-x", "Election Not Started!", `The election has not started yet. It begins on ${startDateObj.toLocaleDateString()} at ${startDateObj.toLocaleTimeString()}.`);
                 return;
             }
 
             if (currentTime > Number(endDate)) {
+                console.error("[VOTE] Election has ended - aborting");
                 const endDateObj = new Date(Number(endDate) * 1000);
-                Alert.show("warning", "calendar-x-fill", "Election Ended!", `The election has ended. It ended on ${endDateObj.toLocaleDateString()}.`);
+                Alert.show("warning", "calendar-x-fill", "Election Ended!", `The election has ended. It ended on ${endDateObj.toLocaleDateString()} at ${endDateObj.toLocaleTimeString()}.`);
                 return;
             }
 
@@ -707,59 +755,88 @@ const App = {
                 return;
             }
 
-            console.log("All pre-flight checks passed. Proceeding with vote...");
+            console.log("[VOTE] All pre-flight checks passed. Proceeding with vote...");
 
         } catch (err) {
-            console.error("Pre-flight check error:", err);
+            console.error("[VOTE] Pre-flight check error:", err);
             Alert.show("error", "exclamation-triangle-fill", "Pre-flight Check Failed!", `Error checking voting eligibility: ${err.message}`);
             return;
         }
 
-        Alert.show("info", "clock-history", "Voting...", "Submitting your vote to the blockchain.");
-        try {
-            console.log(`Voting for candidate index: ${App.selectedCandidate}`);
+        // Disable vote button to prevent double voting
+        const voteButton = document.getElementById("voteButton");
+        if (voteButton) {
+            voteButton.disabled = true;
+            voteButton.textContent = "Voting...";
+        }
 
-            // Send the transaction without gas estimation to avoid BigInt issues
+        Alert.show("info", "clock-history", "Voting...", "Submitting your vote to the blockchain. Please confirm the transaction in MetaMask.");
+        
+        try {
+            console.log(`[VOTE] Initiating vote transaction for candidate index: ${App.selectedCandidate}`);
+
+            // Send the transaction
             const receipt = await App.contract.methods.vote(App.selectedCandidate).send({
                 from: App.account
                 // Let MetaMask/Web3 handle gas estimation automatically
             });
 
-            console.log("Vote transaction receipt:", receipt);
+            console.log("[VOTE] Vote transaction successful! Receipt:", receipt);
+            console.log(`[VOTE] Transaction hash: ${receipt.transactionHash}`);
+            console.log(`[VOTE] Gas used: ${receipt.gasUsed}`);
 
-            Alert.show("success", "check-circle-fill", "Voted!", "Your vote has been cast successfully!");
+            Alert.show("success", "check-circle-fill", "Vote Cast Successfully!", `Your vote has been recorded on the blockchain. Transaction: ${receipt.transactionHash.substring(0, 10)}...`);
+            
+            // Reload candidates to show updated vote counts
+            console.log("[VOTE] Reloading candidates to show updated vote counts...");
             await App.loadCandidates();
 
             // Reset selection after voting
             App.selectedCandidate = null;
-            document.getElementById("vote").style.display = "none";
-            document.getElementById("voteButton").disabled = true;
+            const voteSection = document.getElementById("vote");
+            if (voteSection) voteSection.style.display = "none";
+            
+            console.log("[VOTE] Vote process completed successfully!");
 
         } catch (err) {
-            console.error("Voting error:", err);
-            console.error("Error details:", err.message);
-            console.error("Error data:", err.data);
+            console.error("[VOTE] Voting transaction failed:", err);
+            console.error("[VOTE] Error details:", err.message);
+            console.error("[VOTE] Error data:", err.data);
 
             let errorMessage = err.message;
+            let errorTitle = "Voting Error!";
 
             // Try to decode common error reasons
             if (err.message.includes("revert")) {
                 if (err.message.includes("Already voted")) {
                     errorMessage = "You have already voted in this election.";
+                    errorTitle = "Already Voted!";
                 } else if (err.message.includes("Election not active")) {
-                    errorMessage = "The election is not currently active.";
+                    errorMessage = "The election is not currently active. Please check the election dates.";
+                    errorTitle = "Election Inactive!";
                 } else if (err.message.includes("Invalid candidate")) {
-                    errorMessage = "The selected candidate is invalid.";
+                    errorMessage = "The selected candidate is invalid. Please refresh and try again.";
+                    errorTitle = "Invalid Candidate!";
                 } else {
-                    errorMessage = "Transaction was reverted by the smart contract.";
+                    errorMessage = "Transaction was reverted by the smart contract. Please check the election status.";
+                    errorTitle = "Transaction Reverted!";
                 }
             } else if (err.message.includes("User denied")) {
-                errorMessage = "You rejected the transaction in MetaMask.";
+                errorMessage = "You rejected the transaction in MetaMask. Your vote was not submitted.";
+                errorTitle = "Transaction Rejected!";
             } else if (err.message.includes("insufficient funds")) {
-                errorMessage = "Insufficient funds to pay for gas fees.";
+                errorMessage = "Insufficient ETH to pay for gas fees. Please get more ETH from Ganache.";
+                errorTitle = "Insufficient Funds!";
             }
 
-            Alert.show("error", "exclamation-triangle-fill", "Voting Error!", errorMessage);
+            // Reset vote button
+            const voteButton = document.getElementById("voteButton");
+            if (voteButton) {
+                voteButton.disabled = false;
+                voteButton.textContent = "Cast Vote";
+            }
+
+            Alert.show("error", "exclamation-triangle-fill", errorTitle, errorMessage);
         }
     },
 
