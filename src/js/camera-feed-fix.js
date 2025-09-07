@@ -9,10 +9,19 @@ class EnhancedCameraFeed {
         this.context = null;
         this.isActive = false;
         this.faceDetectionActive = false;
+        this.currentPlayPromise = null;
+        this.startupInProgress = false;
     }
 
     async startRealCamera() {
         try {
+            // Prevent multiple concurrent startups
+            if (this.startupInProgress) {
+                console.log('⏰ Camera startup already in progress, skipping...');
+                return false;
+            }
+            
+            this.startupInProgress = true;
             console.log('📷 Starting real camera access...');
             
             // Stop any existing stream first
@@ -37,21 +46,13 @@ class EnhancedCameraFeed {
                 videoElement = this.createVideoElement();
             }
 
-            // Set up video stream
-            videoElement.srcObject = this.stream;
-            
-            // Play video with proper error handling
-            const playPromise = videoElement.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.warn('Video play interrupted (this is normal):', error.message);
-                    // Don't treat this as a critical error
-                });
-            }
-            
+            // Store video reference before setting up stream
             this.video = videoElement;
             this.isActive = true;
-
+            
+            // Set up video stream and handle play with proper sequencing
+            await this.setupVideoStream(videoElement);
+            
             // Set up canvas for overlays
             this.setupCanvas();
             
@@ -61,14 +62,91 @@ class EnhancedCameraFeed {
             console.log('✅ Real camera feed started successfully!');
             this.showStatus('✅ Camera active - Position your face in the frame', 'success');
             
+            this.startupInProgress = false;
             return true;
             
         } catch (error) {
             console.error('❌ Real camera access failed:', error);
             this.showStatus('Camera access denied. Showing simulation instead.', 'warning');
             this.startSimulatedFeed();
+            this.startupInProgress = false;
             return false;
         }
+    }
+
+    async setupVideoStream(videoElement) {
+        return new Promise((resolve, reject) => {
+            try {
+                console.log('📷 Setting up video stream...');
+                
+                // Clear any existing play promises
+                if (this.currentPlayPromise) {
+                    this.currentPlayPromise.catch(() => {}); // Ignore previous promise
+                }
+                
+                // Ensure video is in clean state
+                videoElement.pause();
+                videoElement.currentTime = 0;
+                
+                // Set up event listeners before setting srcObject
+                const onLoadedData = () => {
+                    console.log('📷 Video data loaded, starting playback...');
+                    videoElement.removeEventListener('loadeddata', onLoadedData);
+                    
+                    // Start video playback with proper error handling
+                    this.currentPlayPromise = videoElement.play();
+                    
+                    if (this.currentPlayPromise !== undefined) {
+                        this.currentPlayPromise
+                            .then(() => {
+                                console.log('✅ Video playback started successfully');
+                                resolve(true);
+                            })
+                            .catch(error => {
+                                console.warn('🔄 Video play interrupted (normal during setup):', {
+                                    error: error.name,
+                                    message: error.message,
+                                    time: new Date().toLocaleTimeString(),
+                                    videoState: {
+                                        readyState: videoElement.readyState,
+                                        paused: videoElement.paused,
+                                        ended: videoElement.ended,
+                                        currentTime: videoElement.currentTime
+                                    }
+                                });
+                                // Don't reject - this is often normal during rapid setup
+                                resolve(true);
+                            });
+                    } else {
+                        resolve(true);
+                    }
+                };
+                
+                const onError = (error) => {
+                    console.error('❌ Video setup error:', error);
+                    videoElement.removeEventListener('error', onError);
+                    reject(error);
+                };
+                
+                videoElement.addEventListener('loadeddata', onLoadedData, { once: true });
+                videoElement.addEventListener('error', onError, { once: true });
+                
+                // Set timeout for setup
+                setTimeout(() => {
+                    if (!videoElement.srcObject) {
+                        console.warn('⏰ Video setup timeout, proceeding anyway');
+                        resolve(true);
+                    }
+                }, 5000);
+                
+                // Now set the stream source - this should trigger loadeddata
+                videoElement.srcObject = this.stream;
+                
+            } catch (error) {
+                console.error('❌ Video stream setup failed:', error);
+                reject(error);
+            }
+        });
     }
 
     createVideoElement() {
@@ -629,6 +707,19 @@ class EnhancedCameraFeed {
         
         this.isActive = false;
         this.faceDetectionActive = false;
+        this.startupInProgress = false;
+        
+        // Handle any pending play promises
+        if (this.currentPlayPromise) {
+            this.currentPlayPromise.catch(() => {}); // Ignore any pending play errors
+            this.currentPlayPromise = null;
+        }
+        
+        if (this.video) {
+            this.video.pause();
+            this.video.srcObject = null;
+            this.video.currentTime = 0;
+        }
         
         if (this.stream) {
             this.stream.getTracks().forEach(track => {
@@ -636,10 +727,6 @@ class EnhancedCameraFeed {
                 console.log('🔴 Camera track stopped');
             });
             this.stream = null;
-        }
-        
-        if (this.video) {
-            this.video.srcObject = null;
         }
     }
 }
