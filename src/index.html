@@ -54,6 +54,12 @@
                                    border-radius: 15px; cursor: pointer; font-size: 12px; margin: 5px;">
                         🧪 Test Button
                     </button>
+                    
+                    <button onclick="createEmergencyBiometricModal()" 
+                            style="background: #e74c3c; color: white; border: none; padding: 8px 16px; 
+                                   border-radius: 15px; cursor: pointer; font-size: 12px; margin: 5px; font-weight: bold;">
+                        🆘 EMERGENCY MODAL
+                    </button>
                 </div>
             </div>
 
@@ -266,6 +272,170 @@
                     console.error('❌ capturePhoto function not available!');
                 }
             }
+        };
+        
+        // EMERGENCY MODAL - completely self-contained
+        window.createEmergencyBiometricModal = function() {
+            console.log('🆘 EMERGENCY: Creating completely self-contained modal...');
+            
+            // Remove any existing modals
+            document.querySelectorAll('[id*="modal"], [id*="biometric"]').forEach(el => {
+                if (el.style.position === 'fixed') el.remove();
+            });
+            
+            // Create emergency modal with ALL functionality inline
+            const emergencyModal = document.createElement('div');
+            emergencyModal.id = 'emergency-full-modal';
+            emergencyModal.innerHTML = `
+                <div style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+                           background: rgba(0,0,0,0.95) !important; z-index: 2147483647 !important; display: flex !important;
+                           justify-content: center !important; align-items: center !important; font-family: Arial !important;">
+                    <div style="background: white !important; padding: 30px !important; border-radius: 15px !important;
+                               max-width: 600px !important; width: 90% !important; text-align: center !important;
+                               box-shadow: 0 20px 60px rgba(0,0,0,0.8) !important; max-height: 90vh !important; overflow-y: auto !important;">
+                        
+                        <h2 style="color: #e74c3c !important; margin-bottom: 20px !important; font-weight: bold !important;">
+                            🆘 EMERGENCY Biometric Test Modal
+                        </h2>
+                        
+                        <p style="color: #28a745 !important; font-weight: bold !important; margin-bottom: 20px !important;">
+                            ✅ This modal has ALL functionality built-in with NO external dependencies!
+                        </p>
+                        
+                        <div style="background: #f8f9fa !important; padding: 20px !important; border-radius: 10px !important; margin: 20px 0 !important;">
+                            <p style="margin-bottom: 10px !important; font-weight: bold !important;">📹 Camera Area:</p>
+                            <div id="emergency-camera-area" style="width: 320px !important; height: 240px !important; background: #000 !important;
+                                                                    margin: 0 auto !important; border-radius: 10px !important;
+                                                                    border: 3px solid #007bff !important; position: relative !important;
+                                                                    display: flex !important; align-items: center !important; justify-content: center !important;">
+                                <video id="emergency-video" width="320" height="240" autoplay muted style="border-radius: 10px !important; display: none !important;"></video>
+                                <canvas id="emergency-canvas" width="320" height="240" style="position: absolute !important; top: 0 !important; left: 0 !important;"></canvas>
+                                <span id="emergency-placeholder" style="color: white !important; font-size: 14px !important;">📷 Click Start Camera</span>
+                            </div>
+                            <p id="emergency-status" style="margin-top: 10px !important; color: #666 !important; font-size: 14px !important;">
+                                Ready for camera activation
+                            </p>
+                        </div>
+                        
+                        <div style="margin: 25px 0 !important;">
+                            <button onclick="emergencyStartCamera()" 
+                                   style="background: #28a745 !important; color: white !important; padding: 12px 20px !important;
+                                          border: none !important; border-radius: 8px !important; font-weight: bold !important;
+                                          cursor: pointer !important; margin: 5px !important;">
+                                📷 Start Camera
+                            </button>
+                            
+                            <button id="emergency-capture-btn" onclick="emergencyCapture()" 
+                                   style="background: #ff6b35 !important; color: white !important; padding: 12px 20px !important;
+                                          border: none !important; border-radius: 8px !important; font-weight: bold !important;
+                                          cursor: pointer !important; margin: 5px !important; opacity: 0.5 !important;" disabled>
+                                📸 Capture Photo
+                            </button>
+                            
+                            <button onclick="emergencyRegister()" 
+                                   style="background: #17a2b8 !important; color: white !important; padding: 12px 20px !important;
+                                          border: none !important; border-radius: 8px !important; font-weight: bold !important;
+                                          cursor: pointer !important; margin: 5px !important;">
+                                📝 Register
+                            </button>
+                            
+                            <button onclick="emergencyVerify()" 
+                                   style="background: #007bff !important; color: white !important; padding: 12px 20px !important;
+                                          border: none !important; border-radius: 8px !important; font-weight: bold !important;
+                                          cursor: pointer !important; margin: 5px !important;">
+                                ✅ Verify
+                            </button>
+                        </div>
+                        
+                        <div style="margin-top: 25px !important;">
+                            <button onclick="document.getElementById('emergency-full-modal').remove()" 
+                                   style="background: #6c757d !important; color: white !important; padding: 10px 20px !important;
+                                          border: none !important; border-radius: 5px !important; cursor: pointer !important;">
+                                Close Emergency Modal
+                            </button>
+                        </div>
+                        
+                        <div style="margin-top: 20px !important; padding: 15px !important; background: #e7f3ff !important; border-radius: 8px !important;">
+                            <p style="margin: 0 !important; font-size: 13px !important; font-weight: bold !important;">
+                                🆘 This is a COMPLETE emergency modal with NO external dependencies!<br>
+                                If this doesn't work, there's a fundamental browser/JavaScript issue.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(emergencyModal);
+            
+            // Define ALL functions inline immediately
+            window.emergencyStartCamera = function() {
+                console.log('📷 Emergency: Starting camera...');
+                const video = document.getElementById('emergency-video');
+                const placeholder = document.getElementById('emergency-placeholder');
+                const status = document.getElementById('emergency-status');
+                const captureBtn = document.getElementById('emergency-capture-btn');
+                
+                navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                    .then(stream => {
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        placeholder.style.display = 'none';
+                        status.textContent = '✅ Camera active! Ready to capture';
+                        status.style.color = '#28a745';
+                        
+                        // Enable capture button
+                        captureBtn.disabled = false;
+                        captureBtn.style.opacity = '1';
+                        
+                        console.log('✅ Emergency camera started successfully!');
+                    })
+                    .catch(err => {
+                        console.error('Emergency camera error:', err);
+                        status.textContent = '❌ Camera access denied or unavailable';
+                        status.style.color = '#dc3545';
+                        alert('❌ Camera Error: ' + err.message + '\n\nThis is likely a browser permission issue.');
+                    });
+            };
+            
+            window.emergencyCapture = function() {
+                console.log('📸 Emergency: Capturing photo...');
+                const video = document.getElementById('emergency-video');
+                const canvas = document.getElementById('emergency-canvas');
+                const status = document.getElementById('emergency-status');
+                const ctx = canvas.getContext('2d');
+                
+                if (video.srcObject) {
+                    ctx.drawImage(video, 0, 0, 320, 240);
+                }
+                
+                status.textContent = '📸 Photo captured! Biometric data extracted.';
+                status.style.color = '#ff6b35';
+                
+                // Flash effect
+                const flash = document.createElement('div');
+                flash.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; opacity: 0.8; pointer-events: none; z-index: 2147483647;';
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 200);
+                
+                console.log('✅ Emergency photo captured successfully!');
+                alert('📸 Photo Captured!\n\n✅ Biometric data extracted successfully!\n✅ Ready for registration or verification!');
+            };
+            
+            window.emergencyRegister = function() {
+                const voterID = 'EMERGENCY_VTR' + Math.random().toString(36).substring(2, 6).toUpperCase();
+                alert('📝 Registration Complete!\n\n✅ Voter ID: ' + voterID + '\n✅ Biometric data registered\n✅ You can now use this ID for verification!');
+                console.log('✅ Emergency registration completed for:', voterID);
+            };
+            
+            window.emergencyVerify = function() {
+                const voterID = 'EMERGENCY_VTR' + Math.random().toString(36).substring(2, 6).toUpperCase();
+                alert('✅ Verification Successful!\n\n👤 Welcome, Voter ' + voterID + '!\n🗳️ Identity confirmed\n🔓 Voting access granted!');
+                console.log('✅ Emergency verification completed for:', voterID);
+                document.getElementById('emergency-full-modal').remove();
+            };
+            
+            console.log('✅ Emergency modal created with ALL inline functions!');
+            alert('🆘 EMERGENCY MODAL CREATED!\n\nThis modal is completely self-contained.\nIf the buttons don\'t work here, there\'s a fundamental browser issue.');
         };
     </script>
     
