@@ -118,10 +118,10 @@ The primary issue preventing voters from casting votes was:
 4. **Invalid Candidates**: Test edge cases and error handling
 5. **Network Issues**: Test MetaMask network switching
 
-#### Biometric Authentication:
-1. Enable biometric authentication by clicking the "Enable Biometric Login" button
-2. Grant camera permissions when prompted
-3. Complete biometric registration/verification before voting
+#### NIN Verification:
+1. Click "🆔 Verify NIN to Vote" button on main page
+2. Enter your National Identification Number and personal details
+3. Complete verification and registration before voting
 
 ### Phase 5: Real-Time Monitoring
 
