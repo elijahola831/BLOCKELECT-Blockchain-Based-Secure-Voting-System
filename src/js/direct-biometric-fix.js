@@ -74,31 +74,45 @@ function createDirectBiometricModal() {
             </div>
             
             <div style="margin: 25px 0 !important;">
-                <button onclick="simulateCamera()" 
+                <button id="direct-camera-start" onclick="simulateCamera()" 
                         style="background: #28a745 !important; color: white !important; 
                                padding: 12px 20px !important; margin: 5px !important;
                                border: none !important; border-radius: 8px !important; 
                                font-weight: bold !important; cursor: pointer !important;
                                font-size: 14px !important;">
-                    📷 Start Camera Simulation
+                    📷 Start Camera
                 </button>
                 
-                <button onclick="simulateRegister()" 
+                <button id="direct-camera-capture" onclick="captureDirectPhoto()" 
+                        style="background: #ff6b35 !important; color: white !important; 
+                               padding: 12px 20px !important; margin: 5px !important;
+                               border: none !important; border-radius: 8px !important; 
+                               font-weight: bold !important; cursor: pointer !important;
+                               font-size: 14px !important; opacity: 0.5 !important;" 
+                        disabled>
+                    📸 Capture Photo
+                </button>
+            </div>
+            
+            <div style="margin: 15px 0 !important; border-top: 1px solid #dee2e6 !important; padding-top: 15px !important;">
+                <button id="direct-register" onclick="simulateRegister()" 
                         style="background: #17a2b8 !important; color: white !important; 
                                padding: 12px 20px !important; margin: 5px !important;
                                border: none !important; border-radius: 8px !important; 
                                font-weight: bold !important; cursor: pointer !important;
-                               font-size: 14px !important;">
-                    📝 Register Biometric
+                               font-size: 14px !important; opacity: 0.5 !important;" 
+                        disabled>
+                    📝 Register This Face
                 </button>
                 
-                <button onclick="simulateVerify()" 
+                <button id="direct-verify" onclick="simulateVerify()" 
                         style="background: #007bff !important; color: white !important; 
                                padding: 12px 20px !important; margin: 5px !important;
                                border: none !important; border-radius: 8px !important; 
                                font-weight: bold !important; cursor: pointer !important;
-                               font-size: 14px !important;">
-                    ✅ Verify Identity
+                               font-size: 14px !important; opacity: 0.5 !important;" 
+                        disabled>
+                    ✅ Verify This Face
                 </button>
             </div>
             
@@ -167,11 +181,20 @@ function simulateCamera() {
                 </span>
             `;
             
-            // Update camera button to capture button
+            // Enable the capture button
+            const captureBtn = document.getElementById('direct-camera-capture');
+            if (captureBtn) {
+                captureBtn.disabled = false;
+                captureBtn.style.opacity = '1 !important';
+                captureBtn.style.boxShadow = '0 0 10px rgba(255,107,53,0.3) !important';
+            }
+            
+            // Update start button
             if (cameraBtn) {
-                cameraBtn.textContent = '📸 Capture Photo';
-                cameraBtn.onclick = captureDirectPhoto;
-                cameraBtn.style.background = '#ff6b35 !important';
+                cameraBtn.textContent = '✅ Camera Active';
+                cameraBtn.style.background = '#6c757d !important';
+                cameraBtn.disabled = true;
+                cameraBtn.style.opacity = '0.7 !important';
             }
             
             // Simulate face detection after 2 seconds
@@ -295,24 +318,30 @@ function captureDirectPhoto() {
                 </span>
             `;
             
-            // Update buttons
-            const captureBtn = document.querySelector('button[onclick="captureDirectPhoto()"]');
-            const registerBtn = document.querySelector('button[onclick="simulateRegister()"]');
-            const verifyBtn = document.querySelector('button[onclick="simulateVerify()"]');
-            
+            // Update capture button to recapture mode
+            const captureBtn = document.getElementById('direct-camera-capture');
             if (captureBtn) {
-                captureBtn.textContent = '🗘️ Recapture';
+                captureBtn.textContent = '🔄 Recapture';
                 captureBtn.style.background = '#28a745 !important';
+                captureBtn.style.boxShadow = '0 0 10px rgba(40,167,69,0.3) !important';
             }
             
+            // Enable registration and verification buttons
+            const registerBtn = document.getElementById('direct-register');
+            const verifyBtn = document.getElementById('direct-verify');
+            
             if (registerBtn) {
-                registerBtn.textContent = '📝 Register This Face';
+                registerBtn.disabled = false;
+                registerBtn.style.opacity = '1 !important';
                 registerBtn.style.boxShadow = '0 0 10px rgba(23,162,184,0.5) !important';
+                registerBtn.style.background = '#17a2b8 !important';
             }
             
             if (verifyBtn) {
-                verifyBtn.textContent = '✅ Verify This Face';
+                verifyBtn.disabled = false;
+                verifyBtn.style.opacity = '1 !important';
                 verifyBtn.style.boxShadow = '0 0 10px rgba(0,123,255,0.5) !important';
+                verifyBtn.style.background = '#007bff !important';
             }
             
         }, 1000);
