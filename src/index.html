@@ -463,11 +463,16 @@
             console.log('✅ Immediate biometric modal created and shown');
         }
         
-        // Simple biometric functions
+        // Enhanced camera functions with capture capability
         function startSimpleCamera() {
             console.log('📷 Starting simple camera...');
             const video = document.getElementById('biometric-video');
             const status = document.getElementById('biometric-status');
+            
+            // Clear any existing canvas
+            const canvas = document.getElementById('biometric-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
                 .then(stream => {
@@ -475,26 +480,164 @@
                     status.textContent = '✅ Camera active! Position your face in the frame';
                     status.style.color = '#28a745';
                     
+                    // Update the camera button to become a capture button
+                    const cameraBtn = document.querySelector('button[onclick="startSimpleCamera()"]');
+                    if (cameraBtn) {
+                        cameraBtn.textContent = '📸 Capture Photo';
+                        cameraBtn.onclick = capturePhoto;
+                        cameraBtn.style.background = '#ff6b35';
+                    }
+                    
                     // Simulate face detection after 2 seconds
                     setTimeout(() => {
-                        status.textContent = '👤 Face detected! Ready for registration or verification';
+                        status.textContent = '👤 Face detected! Click "Capture Photo" to take snapshot';
                         
                         // Draw face detection rectangle
-                        const canvas = document.getElementById('biometric-canvas');
-                        const ctx = canvas.getContext('2d');
                         ctx.strokeStyle = '#00ff00';
                         ctx.lineWidth = 3;
                         ctx.strokeRect(80, 60, 160, 120);
                         ctx.fillStyle = '#00ff00';
                         ctx.font = '14px Arial';
                         ctx.fillText('Face Detected', 85, 55);
+                        
+                        // Add blinking indicator for face detection
+                        let blinkCount = 0;
+                        const blinkInterval = setInterval(() => {
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            if (blinkCount % 2 === 0) {
+                                ctx.strokeStyle = '#00ff00';
+                                ctx.lineWidth = 3;
+                                ctx.strokeRect(80, 60, 160, 120);
+                                ctx.fillStyle = '#00ff00';
+                                ctx.font = '14px Arial';
+                                ctx.fillText('Face Detected', 85, 55);
+                            }
+                            blinkCount++;
+                            if (blinkCount > 6) {
+                                clearInterval(blinkInterval);
+                                // Final stable frame
+                                ctx.strokeStyle = '#00ff00';
+                                ctx.lineWidth = 3;
+                                ctx.strokeRect(80, 60, 160, 120);
+                                ctx.fillStyle = '#00ff00';
+                                ctx.font = '14px Arial';
+                                ctx.fillText('Ready to Capture', 85, 55);
+                            }
+                        }, 500);
                     }, 2000);
                 })
                 .catch(err => {
                     console.error('Camera error:', err);
                     status.textContent = '❌ Camera access denied. Please enable camera permissions.';
                     status.style.color = '#dc3545';
+                    
+                    // Show camera permission help
+                    setTimeout(() => {
+                        status.innerHTML = `
+                            ❌ Camera access denied.<br>
+                            <small style="color: #666; margin-top: 5px; display: block;">
+                                Please click the camera icon in your browser's address bar and allow camera access,<br>
+                                then refresh the page and try again.
+                            </small>
+                        `;
+                    }, 1000);
                 });
+        }
+        
+        // New capture photo function
+        function capturePhoto() {
+            console.log('📸 Capturing photo...');
+            const video = document.getElementById('biometric-video');
+            const canvas = document.getElementById('biometric-canvas');
+            const ctx = canvas.getContext('2d');
+            const status = document.getElementById('biometric-status');
+            
+            // Capture the current video frame
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Add capture effect
+            status.textContent = '📸 Photo captured! Processing biometric data...';
+            status.style.color = '#ff6b35';
+            
+            // Flash effect
+            const flashDiv = document.createElement('div');
+            flashDiv.style.cssText = `
+                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                background: white; opacity: 0.8; pointer-events: none;
+                border-radius: 10px; z-index: 1000;
+            `;
+            video.parentElement.appendChild(flashDiv);
+            
+            setTimeout(() => {
+                flashDiv.remove();
+                
+                // Draw captured frame with processing indicators
+                ctx.strokeStyle = '#ff6b35';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(0, 0, canvas.width, canvas.height);
+                
+                // Add processing indicators
+                ctx.fillStyle = '#ff6b35';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText('Processing...', 10, 30);
+                
+                // Show feature extraction points
+                const featurePoints = [
+                    [120, 80], [200, 80], // Eyes
+                    [160, 110], // Nose
+                    [140, 150], [180, 150] // Mouth corners
+                ];
+                
+                featurePoints.forEach(([x, y], index) => {
+                    setTimeout(() => {
+                        ctx.fillStyle = '#ff6b35';
+                        ctx.beginPath();
+                        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                        ctx.fill();
+                        
+                        // Add small cross
+                        ctx.strokeStyle = '#ff6b35';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(x - 5, y);
+                        ctx.lineTo(x + 5, y);
+                        ctx.moveTo(x, y - 5);
+                        ctx.lineTo(x, y + 5);
+                        ctx.stroke();
+                    }, index * 200);
+                });
+                
+                // Update status and enable next steps
+                setTimeout(() => {
+                    status.textContent = '✅ Biometric data captured! Now you can register or verify your identity.';
+                    status.style.color = '#28a745';
+                    
+                    // Update capture button
+                    const captureBtn = document.querySelector('button[onclick="capturePhoto()"]');
+                    if (captureBtn) {
+                        captureBtn.textContent = '📷 Recapture';
+                        captureBtn.style.background = '#28a745';
+                    }
+                    
+                    // Enable registration and verification buttons with visual indicator
+                    const registerBtn = document.querySelector('button[onclick="simulateRegistration()"]');
+                    const verifyBtn = document.querySelector('button[onclick="simulateVerification()"]');
+                    
+                    if (registerBtn) {
+                        registerBtn.style.background = '#17a2b8';
+                        registerBtn.style.boxShadow = '0 0 10px rgba(23,162,184,0.5)';
+                        registerBtn.textContent = '📝 Register This Face';
+                    }
+                    
+                    if (verifyBtn) {
+                        verifyBtn.style.background = '#007bff';
+                        verifyBtn.style.boxShadow = '0 0 10px rgba(0,123,255,0.5)';
+                        verifyBtn.textContent = '✅ Verify This Face';
+                    }
+                    
+                }, 1500);
+                
+            }, 200);
         }
         
         function simulateRegistration() {

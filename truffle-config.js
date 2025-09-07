@@ -3,11 +3,12 @@ module.exports = {
         development: {
             host: "127.0.0.1",
             port: 7545,
-            network_id: 1337, // Match Ganache network id
+            network_id: 5777, // Match Ganache network id
             gas: 6721975,      // Gas limit
             gasPrice: 20000000000, // 20 gwei
             confirmations: 0,  // # of confirmations to wait between deployments
             timeoutBlocks: 200, // # of blocks before a deployment times out
+            networkCheckTimeout: 60000, // 60 seconds timeout
             skipDryRun: true   // Skip dry run before migrations
         },
         
