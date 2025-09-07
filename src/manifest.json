@@ -1,7 +1,7 @@
 {
   "name": "BLOCKELECT - Blockchain Voting System",
   "short_name": "BLOCKELECT",
-  "description": "Secure blockchain-based electronic voting system with real-time analytics",
+  "description": "Secure blockchain-based electronic voting system with NIN verification, advanced analytics and privacy features",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#667eea",

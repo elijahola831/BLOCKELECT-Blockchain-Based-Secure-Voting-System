@@ -1,5 +1,5 @@
 // NIN (National Identification Number) Verification Module for BLOCKELECT
-// Replaces the previous biometric authentication system with NIN-based voter verification
+// Secure voter authentication using Nigeria's National Identity Database
 
 console.log('🆔 Loading BLOCKELECT NIN Verification System...');
 

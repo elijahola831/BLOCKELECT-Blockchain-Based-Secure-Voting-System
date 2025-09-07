@@ -225,7 +225,7 @@ function displayCompletionMessage() {
     log("🌐 Your blockchain voting system is ready!", colors.cyan);
     log("");
     log("📍 Access Points:", colors.magenta);
-    log(`   • Voter Interface: http://localhost:${CONFIG.SERVER_PORT}`, colors.white);
+    log(`   • Voter Interface (NIN Verification): http://localhost:${CONFIG.SERVER_PORT}`, colors.white);
     log(`   • Electoral Commission: http://localhost:${CONFIG.SERVER_PORT}/official.html`, colors.white);
     log("");
     log("🔗 MetaMask Configuration:", colors.magenta);
