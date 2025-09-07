@@ -243,6 +243,15 @@
                 navigator.mediaDevices.getUserMedia({ video: true, audio: false })
                     .then(stream => {
                         video.srcObject = stream;
+                        
+                        // Play video with error handling
+                        const playPromise = video.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(error => {
+                                console.warn('Video play interrupted (normal):', error.message);
+                            });
+                        }
+                        
                         video.style.display = 'block';
                         placeholder.style.display = 'none';
                         status.textContent = '✅ Camera active! Ready to capture';

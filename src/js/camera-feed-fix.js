@@ -39,7 +39,15 @@ class EnhancedCameraFeed {
 
             // Set up video stream
             videoElement.srcObject = this.stream;
-            videoElement.play();
+            
+            // Play video with proper error handling
+            const playPromise = videoElement.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn('Video play interrupted (this is normal):', error.message);
+                    // Don't treat this as a critical error
+                });
+            }
             
             this.video = videoElement;
             this.isActive = true;
