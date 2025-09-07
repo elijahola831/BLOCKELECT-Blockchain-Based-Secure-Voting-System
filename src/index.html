@@ -233,6 +233,40 @@
         };
         
         console.log('✅ Immediate biometric functionality ready!');
+        console.log('🔍 Function availability check:', {
+            capturePhoto: typeof window.capturePhoto,
+            startSimpleCamera: typeof window.startSimpleCamera,
+            simulateRegistration: typeof window.simulateRegistration,
+            simulateVerification: typeof window.simulateVerification
+        });
+        
+        // Test function to check capture button functionality
+        window.testCaptureButton = function() {
+            console.log('🧪 Testing capture button functionality...');
+            
+            // Check if capture function exists
+            console.log('capturePhoto function exists:', typeof window.capturePhoto === 'function');
+            
+            // Find the capture button
+            const captureBtn = document.getElementById('camera-capture-btn');
+            console.log('Capture button found:', !!captureBtn);
+            
+            if (captureBtn) {
+                console.log('Capture button properties:', {
+                    disabled: captureBtn.disabled,
+                    onclick: captureBtn.onclick,
+                    style: captureBtn.style.opacity
+                });
+                
+                // Try to trigger the function directly
+                console.log('📸 Attempting to call capturePhoto() directly...');
+                if (typeof window.capturePhoto === 'function') {
+                    window.capturePhoto();
+                } else {
+                    console.error('❌ capturePhoto function not available!');
+                }
+            }
+        };
     </script>
     
     <!-- Inline Debug Helper for immediate use -->
@@ -475,7 +509,7 @@
         }
         
         // Enhanced camera functions with capture capability
-        function startSimpleCamera() {
+        window.startSimpleCamera = function startSimpleCamera() {
             console.log('📷 Starting simple camera...');
             const video = document.getElementById('biometric-video');
             const status = document.getElementById('biometric-status');
@@ -564,9 +598,28 @@
                 });
         }
         
-        // New capture photo function
-        function capturePhoto() {
-            console.log('📸 Capturing photo...');
+        // New capture photo function - make it globally accessible
+        window.capturePhoto = function capturePhoto() {
+            console.log('📸 CAPTURE BUTTON CLICKED - Starting photo capture...');
+            
+            // Debug: Check if elements exist
+            const video = document.getElementById('biometric-video');
+            const canvas = document.getElementById('biometric-canvas');
+            const status = document.getElementById('biometric-status');
+            
+            console.log('Debug - Elements found:', {
+                video: !!video,
+                canvas: !!canvas, 
+                status: !!status
+            });
+            
+            if (!video || !canvas || !status) {
+                console.error('❌ Required elements not found!');
+                alert('❌ Error: Biometric modal elements not found. Please try reopening the modal.');
+                return;
+            }
+            
+            console.log('📸 All elements found, proceeding with capture...');
             const video = document.getElementById('biometric-video');
             const canvas = document.getElementById('biometric-canvas');
             const ctx = canvas.getContext('2d');
@@ -663,7 +716,7 @@
             }, 200);
         }
         
-        function simulateRegistration() {
+        window.simulateRegistration = function simulateRegistration() {
             const status = document.getElementById('biometric-status');
             status.textContent = '📝 Registering biometric data...';
             status.style.color = '#17a2b8';
@@ -676,7 +729,7 @@
             }, 1500);
         }
         
-        function simulateVerification() {
+        window.simulateVerification = function simulateVerification() {
             const status = document.getElementById('biometric-status');
             status.textContent = '🔍 Verifying identity...';
             status.style.color = '#007bff';
@@ -698,7 +751,7 @@
             }, 1500);
         }
         
-        function closeBiometricModal() {
+        window.closeBiometricModal = function closeBiometricModal() {
             const modal = document.getElementById('biometric-auth-modal');
             if (modal) {
                 // Stop any camera streams
@@ -710,7 +763,7 @@
             }
         }
         
-        function useTraditionalAuth() {
+        window.useTraditionalAuth = function useTraditionalAuth() {
             closeBiometricModal();
             const userID = prompt('Traditional Authentication\n\nEnter your Voter ID or Name:');
             if (userID) {
