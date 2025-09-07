@@ -392,17 +392,40 @@ class BiometricAuthenticator {
 // Initialize biometric authentication
 let biometricAuth;
 
-document.addEventListener('DOMContentLoaded', () => {
-    biometricAuth = new BiometricAuthenticator();
-    
-    // Add biometric authentication button to voter page
+// Initialize when DOM is ready
+function initializeBiometric() {
+    try {
+        console.log('🔐 Initializing biometric authentication...');
+        biometricAuth = new BiometricAuthenticator();
+        window.biometricAuth = biometricAuth;
+        
+        // Setup button listeners
+        setTimeout(() => {
+            addBiometricButton();
+            setupBiometricButtonListener();
+        }, 1000);
+        
+        console.log('✅ Biometric authentication initialized successfully');
+    } catch (error) {
+        console.error('❌ Error initializing biometric auth:', error);
+    }
+}
+
+// Try multiple initialization methods
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeBiometric);
+} else {
+    initializeBiometric();
+}
+
+// Also try after window load
+window.addEventListener('load', () => {
     setTimeout(() => {
-        addBiometricButton();
-        setupBiometricButtonListener();
-    }, 1000);
-    
-    // Make globally available
-    window.biometricAuth = biometricAuth;
+        if (!window.biometricAuth) {
+            console.log('🔄 Retry biometric initialization...');
+            initializeBiometric();
+        }
+    }, 2000);
 });
 
 function addBiometricButton() {

@@ -43,10 +43,16 @@
                             style="background: linear-gradient(45deg, #007bff, #0056b3); color: white; 
                                    border: none; padding: 10px 20px; border-radius: 25px; font-weight: bold; 
                                    cursor: pointer; box-shadow: 0 3px 10px rgba(0,123,255,0.3); 
-                                   transition: all 0.3s ease; font-size: 14px;"
+                                   transition: all 0.3s ease; font-size: 14px; margin: 5px;"
                             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,123,255,0.4)'"
-                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 10px rgba(0,123,255,0.3)'">
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 10px rgba(0,123,255,0.3)'"
+                            onclick="openBiometricAuth()">
                         🔐 Enable Biometric Login
+                    </button>
+                    <button onclick="testBiometricButton()" 
+                            style="background: #6c757d; color: white; border: none; padding: 8px 16px; 
+                                   border-radius: 15px; cursor: pointer; font-size: 12px; margin: 5px;">
+                        🧪 Test Button
                     </button>
                 </div>
             </div>
@@ -156,6 +162,52 @@
                 }
             }, 3000);
         });
+        
+        // Biometric button function
+        function openBiometricAuth() {
+            console.log('🔐 Biometric button clicked!');
+            
+            // Try multiple ways to open biometric auth
+            if (typeof biometricAuth !== 'undefined' && biometricAuth.showBiometricAuth) {
+                console.log('🔐 Opening biometric auth via biometricAuth');
+                biometricAuth.showBiometricAuth();
+            } else if (typeof window.biometricAuth !== 'undefined' && window.biometricAuth.showBiometricAuth) {
+                console.log('🔐 Opening biometric auth via window.biometricAuth');
+                window.biometricAuth.showBiometricAuth();
+            } else {
+                console.log('🔐 Biometric auth not loaded, showing fallback');
+                // Fallback - show alert and try to initialize
+                alert('🔐 Biometric Authentication\n\nInitializing biometric system...\n\nPlease grant camera permissions when prompted.');
+                
+                // Try to initialize biometric system
+                setTimeout(() => {
+                    if (typeof BiometricAuthenticator !== 'undefined') {
+                        window.biometricAuth = new BiometricAuthenticator();
+                        window.biometricAuth.showBiometricAuth();
+                    } else {
+                        console.error('❌ Biometric authenticator not available');
+                        alert('❌ Biometric authentication not available.\n\nPlease check that:\n1. Camera permissions are granted\n2. You are using HTTPS or localhost\n3. Browser supports WebRTC');
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Test function for biometric button
+        function testBiometricButton() {
+            console.log('🧪 Testing biometric button functionality');
+            const btn = document.getElementById('biometric-btn');
+            if (btn) {
+                console.log('✅ Biometric button found in DOM');
+                btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                btn.textContent = '✅ Button Working!';
+                setTimeout(() => {
+                    btn.style.background = 'linear-gradient(45deg, #007bff, #0056b3)';
+                    btn.textContent = '🔐 Enable Biometric Login';
+                }, 2000);
+            } else {
+                console.error('❌ Biometric button not found in DOM');
+            }
+        }
     </script>
     
     <!-- PWA Service Worker Registration -->
