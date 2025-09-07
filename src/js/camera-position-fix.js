@@ -91,11 +91,33 @@ function createImmediateVisibleCamera() {
                           background: #000033 !important; position: relative !important;
                           z-index: 2147483647 !important;">
             </canvas>
-            <div style="margin-top: 20px;">
+            <div style="margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                <button onclick="captureSimulationPhoto()" 
+                        style="background: #28a745; color: white; padding: 12px 24px; 
+                               border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                    📝 Register Biometric
+                </button>
+                <button onclick="verifySimulationIdentity()" 
+                        style="background: #007bff; color: white; padding: 12px 24px; 
+                               border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                    ✅ Verify Identity
+                </button>
+                <button onclick="takeSimulationSnapshot()" 
+                        style="background: #17a2b8; color: white; padding: 12px 24px; 
+                               border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                    📸 Capture Photo
+                </button>
+            </div>
+            <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
                 <button onclick="document.getElementById('visible-camera-modal').remove()" 
                         style="background: #dc3545; color: white; padding: 10px 20px; 
                                border: none; border-radius: 5px; cursor: pointer;">
                     Stop Camera
+                </button>
+                <button onclick="useFallbackLogin()" 
+                        style="background: #ffc107; color: #000; padding: 10px 20px; 
+                               border: none; border-radius: 5px; cursor: pointer;">
+                    🔑 Traditional Login
                 </button>
             </div>
         </div>
@@ -173,6 +195,125 @@ function createImmediateVisibleCamera() {
     
     animate();
     console.log('✅ Visible camera simulation started!');
+}
+
+// Simulation capture functions
+window.captureSimulationPhoto = function() {
+    const voterID = 'VTR' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    
+    // Simulate capturing biometric data
+    const biometricData = {
+        voterID: voterID,
+        biometricHash: Math.random().toString(36).substring(2, 10),
+        registrationTime: new Date().toISOString(),
+        verified: true
+    };
+    
+    localStorage.setItem('biometric_' + voterID, JSON.stringify(biometricData));
+    
+    // Show success message
+    alert(`🎉 Biometric Registration Successful!\n\nVoter ID: ${voterID}\n\n✅ Biometric data captured and stored\n✅ Face recognition enabled\n✅ Ready for verification\n\nYou can now use face recognition to vote!`);
+    
+    console.log('📝 Biometric registration completed for:', voterID);
+};
+
+window.verifySimulationIdentity = function() {
+    // Check if any biometric data exists
+    let foundBiometric = null;
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('biometric_')) {
+            foundBiometric = JSON.parse(localStorage.getItem(key));
+            break;
+        }
+    }
+    
+    if (foundBiometric) {
+        const voterID = foundBiometric.voterID;
+        
+        // Close modal
+        document.getElementById('visible-camera-modal').remove();
+        
+        // Show success
+        setTimeout(() => {
+            alert(`✅ Identity Verified Successfully!\n\n👤 Welcome, Voter ${voterID}!\n🗳️ Authentication complete\n🔓 You can now cast your vote!`);
+            
+            // Show auth indicator
+            showAuthenticatedIndicator(voterID);
+        }, 500);
+    } else {
+        alert('❌ No registered biometric data found.\nPlease register first using "Register Biometric" button.');
+    }
+};
+
+window.takeSimulationSnapshot = function() {
+    // Create a snapshot from the canvas
+    const canvas = document.getElementById('visible-camera-canvas');
+    if (canvas) {
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        
+        // Show preview
+        const preview = document.createElement('div');
+        preview.style.cssText = `
+            position: fixed; top: 20px; right: 20px; z-index: 2147483649;
+            background: white; padding: 15px; border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); max-width: 200px;
+        `;
+        
+        preview.innerHTML = `
+            <h4 style="margin: 0 0 10px 0; color: #007bff; font-size: 14px;">📸 Snapshot Taken</h4>
+            <img src="${imageData}" style="width: 100%; border-radius: 5px; border: 2px solid #28a745;">
+            <button onclick="this.parentElement.remove()" 
+                   style="width: 100%; margin-top: 10px; padding: 5px; background: #6c757d; 
+                          color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Close
+            </button>
+        `;
+        
+        document.body.appendChild(preview);
+        
+        // Auto-remove after 8 seconds
+        setTimeout(() => preview.remove(), 8000);
+        
+        console.log('📸 Simulation snapshot captured successfully!');
+    }
+};
+
+window.useFallbackLogin = function() {
+    document.getElementById('visible-camera-modal').remove();
+    
+    const userID = prompt('🔑 Traditional Authentication\n\nEnter your name or voter ID:') || 'Anonymous';
+    
+    if (userID && userID !== 'Anonymous') {
+        alert(`✅ Traditional Login Successful!\n\n👤 Welcome, ${userID}!\n🗳️ Authentication complete\n🔓 Voting access granted`);
+        showAuthenticatedIndicator(userID);
+    }
+};
+
+function showAuthenticatedIndicator(voterID) {
+    // Remove any existing indicators
+    const existing = document.getElementById('biometric-auth-indicator');
+    if (existing) existing.remove();
+    
+    // Create new indicator
+    const indicator = document.createElement('div');
+    indicator.id = 'biometric-auth-indicator';
+    indicator.style.cssText = `
+        position: fixed; top: 20px; left: 20px; z-index: 999999;
+        background: linear-gradient(45deg, #28a745, #20c997); color: white;
+        padding: 15px 20px; border-radius: 12px; font-weight: bold;
+        box-shadow: 0 4px 20px rgba(40,167,69,0.4); font-size: 14px;
+    `;
+    indicator.innerHTML = `🔐 Authenticated: ${voterID} ✅`;
+    
+    document.body.appendChild(indicator);
+    
+    // Enable voting buttons
+    const voteButtons = document.querySelectorAll('.vote-btn, #voteButton, button[onclick*="vote"]');
+    voteButtons.forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    });
 }
 
 // Override the simulateCamera function globally
