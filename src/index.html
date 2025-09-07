@@ -469,6 +469,18 @@
                                     disabled>
                                 📸 Capture Photo
                             </button>
+                            
+                            <button onclick="alert('Emergency test button clicked!')" 
+                                    style="background: #dc3545; color: white; padding: 8px 16px; 
+                                           border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 12px;">
+                                🆘 Test Click
+                            </button>
+                            
+                            <button onclick="console.log('Alternative capture clicked'); window.capturePhoto ? window.capturePhoto() : alert('Function not found')" 
+                                    style="background: #28a745; color: white; padding: 8px 16px; 
+                                           border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 12px;">
+                                🔄 Alt Capture
+                            </button>
                         </div>
                         
                         <div style="margin: 15px 0; border-top: 1px solid #eee; padding-top: 15px;">
@@ -506,6 +518,31 @@
             
             document.body.appendChild(modal);
             console.log('✅ Immediate biometric modal created and shown');
+            
+            // IMMEDIATE: Set up capture button functionality
+            setTimeout(() => {
+                const captureBtn = document.getElementById('camera-capture-btn');
+                if (captureBtn) {
+                    console.log('🔧 Setting up capture button with direct event listener...');
+                    
+                    // Remove existing onclick and add event listener
+                    captureBtn.onclick = null;
+                    captureBtn.addEventListener('click', function() {
+                        console.log('📸 CAPTURE BUTTON CLICKED via addEventListener!');
+                        
+                        if (typeof window.capturePhoto === 'function') {
+                            window.capturePhoto();
+                        } else {
+                            console.error('❌ capturePhoto function not available');
+                            alert('❌ Capture function not available. Check console for details.');
+                        }
+                    });
+                    
+                    console.log('✅ Capture button event listener added');
+                } else {
+                    console.error('❌ Capture button not found!');
+                }
+            }, 100);
         }
         
         // Enhanced camera functions with capture capability
