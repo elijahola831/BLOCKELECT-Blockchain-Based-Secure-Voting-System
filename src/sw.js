@@ -127,9 +127,15 @@ async function handleNavigationRequest(request) {
     // Try network first
     const networkResponse = await fetch(request);
     
-    // Update cache with fresh content
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, networkResponse.clone());
+    // Update cache with fresh content (only for complete responses)
+    if (networkResponse.ok && networkResponse.status !== 206 && networkResponse.status < 300) {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        cache.put(request, networkResponse.clone());
+      } catch (cacheError) {
+        console.warn('[SW] Failed to cache navigation response:', cacheError.message);
+      }
+    }
     
     return networkResponse;
   } catch (error) {
@@ -150,10 +156,14 @@ async function handleNetworkFirstRequest(request) {
   try {
     const networkResponse = await fetch(request);
     
-    // Update cache for successful responses
-    if (networkResponse.ok) {
+    // Update cache for successful, complete responses
+    if (networkResponse.ok && networkResponse.status !== 206 && networkResponse.status < 300) {
       const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
+      try {
+        cache.put(request, networkResponse.clone());
+      } catch (cacheError) {
+        console.warn('[SW] Failed to cache network-first response:', cacheError.message);
+      }
     }
     
     return networkResponse;
@@ -196,9 +206,16 @@ async function handleCacheFirstRequest(request) {
   try {
     const networkResponse = await fetch(request);
     
-    // Update cache
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, networkResponse.clone());
+    // Only cache successful, complete responses (not partial responses)
+    if (networkResponse.ok && networkResponse.status !== 206 && networkResponse.status < 300) {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        cache.put(request, networkResponse.clone());
+      } catch (cacheError) {
+        console.warn('[SW] Failed to cache response:', cacheError.message);
+        // Continue without caching - don't break the response
+      }
+    }
     
     return networkResponse;
   } catch (error) {

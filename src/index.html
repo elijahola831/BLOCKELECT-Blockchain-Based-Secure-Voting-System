@@ -929,8 +929,12 @@
         }
     </script>
     
-    <!-- PWA Service Worker Registration -->
+    <!-- PWA Service Worker Registration - TEMPORARILY DISABLED FOR DEBUGGING -->
     <script>
+        console.log('[PWA] Service Worker registration temporarily disabled for debugging');
+        
+        // COMMENTED OUT TO FIX CAPTURE BUTTON ISSUE
+        /*
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -942,6 +946,7 @@
                     });
             });
         }
+        */
         
         // PWA Install prompt
         let deferredPrompt;
