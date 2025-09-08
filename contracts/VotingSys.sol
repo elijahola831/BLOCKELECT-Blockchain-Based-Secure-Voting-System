@@ -42,6 +42,8 @@ contract VotingSys {
     uint public endDate;
 
     mapping(address => bool) public hasVoted;
+    mapping(address => bool) public ninVerified; // Track NIN-verified accounts
+    mapping(address => string) public voterNIN; // Store verified NIN for each voter
     address[] public votersList; // Track all voters for reset functionality
 
     constructor() {
@@ -58,6 +60,7 @@ contract VotingSys {
     event OfficialAdded(address indexed official);
     event OfficialRemoved(address indexed official);
     event RequiredConfirmationsChanged(uint newRequiredConfirmations);
+    event VoterNINVerified(address indexed voter, string ninHash);
 
     modifier onlyOfficial() {
         require(officials[msg.sender], "Not an official");
@@ -69,6 +72,11 @@ contract VotingSys {
             block.timestamp >= startDate && block.timestamp <= endDate,
             "Election not active"
         );
+        _;
+    }
+
+    modifier onlyNINVerified() {
+        require(ninVerified[msg.sender], "NIN verification required");
         _;
     }
 
@@ -85,7 +93,18 @@ contract VotingSys {
         endDate = _end;
     }
 
-    function vote(uint _candidateIndex) external electionActive {
+    // Function for officials to verify voter NIN
+    function verifyVoterNIN(address _voter, string memory _ninHash) external onlyOfficial {
+        require(_voter != address(0), "Invalid voter address");
+        require(bytes(_ninHash).length > 0, "NIN hash cannot be empty");
+        
+        ninVerified[_voter] = true;
+        voterNIN[_voter] = _ninHash;
+        
+        emit VoterNINVerified(_voter, _ninHash);
+    }
+
+    function vote(uint _candidateIndex) external electionActive onlyNINVerified {
         require(!hasVoted[msg.sender], "Already voted");
         require(_candidateIndex < candidates.length, "Invalid candidate");
 
@@ -101,9 +120,11 @@ contract VotingSys {
         // Clear all candidates
         delete candidates;
 
-        // Reset all voters' voting status
+        // Reset all voters' voting status and NIN verifications
         for (uint i = 0; i < votersList.length; i++) {
             hasVoted[votersList[i]] = false;
+            ninVerified[votersList[i]] = false;
+            voterNIN[votersList[i]] = "";
         }
 
         // Clear voters list
@@ -154,6 +175,17 @@ contract VotingSys {
     // Get total number of votes cast
     function getTotalVotes() external view returns (uint) {
         return votersList.length;
+    }
+
+    // Check if voter is NIN verified
+    function isNINVerified(address _voter) external view returns (bool) {
+        return ninVerified[_voter];
+    }
+
+    // Get voter's NIN hash (only returns if verified)
+    function getVoterNINHash(address _voter) external view returns (string memory) {
+        require(ninVerified[_voter], "Voter not NIN verified");
+        return voterNIN[_voter];
     }
     
     // ============ MULTI-SIGNATURE FUNCTIONS ============
@@ -264,9 +296,11 @@ contract VotingSys {
             // Clear all candidates
             delete candidates;
             
-            // Reset all voters' voting status
+            // Reset all voters' voting status and NIN verifications
             for (uint i = 0; i < votersList.length; i++) {
                 hasVoted[votersList[i]] = false;
+                ninVerified[votersList[i]] = false;
+                voterNIN[votersList[i]] = "";
             }
             
             // Clear voters list

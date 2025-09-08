@@ -526,9 +526,33 @@ const App = {
         }
 
         try {
+            // Check NIN verification status first
+            console.log("Checking NIN verification status...");
+            const isNINVerified = await App.contract.methods.isNINVerified(App.account).call();
+            console.log(`NIN verified: ${isNINVerified}`);
+            
             console.log("Calling getCandidates() from contract...");
             const result = await App.contract.methods.getCandidates().call();
             console.log("Contract call result:", result);
+
+            // If not NIN verified, disable voting UI
+            const voteSection = document.getElementById("vote");
+            const cantVoteSection = document.getElementById("cantVote");
+            const voteButton = document.getElementById("voteButton");
+            if (!isNINVerified) {
+                if (voteSection) voteSection.style.display = "none";
+                if (cantVoteSection) {
+                    cantVoteSection.style.display = "block";
+                    cantVoteSection.innerHTML = `
+                        <div class="alert alert-warning">
+                            <strong>NIN Verification Required</strong><br/>
+                            You must verify your National Identification Number (NIN) before you can vote.
+                            Please go to the verification page to complete verification.
+                        </div>
+                    `;
+                }
+                if (voteButton) voteButton.disabled = true;
+            }
 
             // Handle the result properly - it might be an object with named properties
             let names, parties, votes;
@@ -687,6 +711,22 @@ const App = {
         // Pre-flight checks before voting
         try {
             console.log("[VOTE] Performing comprehensive pre-flight checks...");
+
+            // Check NIN verification first (most important)
+            console.log("[VOTE] Checking NIN verification status...");
+            const isNINVerified = await App.contract.methods.isNINVerified(App.account).call();
+            console.log(`[VOTE] NIN verified: ${isNINVerified}`);
+
+            if (!isNINVerified) {
+                console.error("[VOTE] User is not NIN verified - aborting");
+                Alert.show(
+                    "warning", 
+                    "person-fill-x", 
+                    "NIN Verification Required!", 
+                    "You must verify your National Identification Number (NIN) before you can vote. Please complete NIN verification first."
+                );
+                return;
+            }
 
             // Check if already voted
             console.log("[VOTE] Checking if user has already voted...");

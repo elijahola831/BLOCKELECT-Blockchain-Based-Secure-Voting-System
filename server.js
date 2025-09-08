@@ -437,7 +437,7 @@ app.post('/api/enhanced-nin/verify', enhancedRateLimit, async (req, res) => {
             });
         }
         
-        // Successful verification
+        // Successful verification - now we need to store this on blockchain
         const processingTime = Date.now() - startTime;
         console.log(`✅ Enhanced NIN verification successful: ${ninRecord.firstName} ${ninRecord.lastName} (${processingTime}ms)`);
         
@@ -456,7 +456,8 @@ app.post('/api/enhanced-nin/verify', enhancedRateLimit, async (req, res) => {
                 ageVerified: true,
                 processingTime: processingTime,
                 sessionId: sessionId,
-                version: version
+                version: version,
+                requiresBlockchainVerification: true
             },
             code: 'ENHANCED_VERIFICATION_SUCCESS',
             metadata: {
@@ -477,6 +478,122 @@ app.post('/api/enhanced-nin/verify', enhancedRateLimit, async (req, res) => {
             sessionId: sessionId,
             processingTime: processingTime,
             message: process.env.NODE_ENV === 'development' ? error.message : 'Please try again later'
+        });
+    }
+});
+
+// Blockchain NIN verification endpoint - for officials to verify voters on blockchain
+app.post('/api/blockchain-nin/verify', async (req, res) => {
+    try {
+        const { voterAddress, ninHash, officialAddress } = req.body;
+        
+        // Validate inputs
+        if (!voterAddress || !ninHash || !officialAddress) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: voterAddress, ninHash, and officialAddress'
+            });
+        }
+        
+        // Validate Ethereum address format
+        if (!web3.utils.isAddress(voterAddress) || !web3.utils.isAddress(officialAddress)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid Ethereum address format'
+            });
+        }
+        
+        // Check if contract is available
+        if (!contract) {
+            return res.status(500).json({
+                success: false,
+                error: 'Smart contract not available'
+            });
+        }
+        
+        // Verify the official has permission
+        const isOfficial = await contract.methods.officials(officialAddress).call();
+        if (!isOfficial) {
+            return res.status(403).json({
+                success: false,
+                error: 'Only election officials can verify NIN on blockchain'
+            });
+        }
+        
+        // Check if voter is already verified
+        const alreadyVerified = await contract.methods.isNINVerified(voterAddress).call();
+        if (alreadyVerified) {
+            return res.status(400).json({
+                success: false,
+                error: 'Voter is already NIN verified on blockchain'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Blockchain NIN verification request validated',
+            data: {
+                voterAddress,
+                ninHash,
+                officialAddress,
+                readyForBlockchain: true
+            }
+        });
+        
+    } catch (error) {
+        console.error('Blockchain NIN verification error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error during blockchain verification'
+        });
+    }
+});
+
+// Check NIN verification status on blockchain
+app.get('/api/blockchain-nin/status/:address', async (req, res) => {
+    try {
+        const { address } = req.params;
+        
+        if (!web3.utils.isAddress(address)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid Ethereum address format'
+            });
+        }
+        
+        if (!contract) {
+            return res.status(500).json({
+                success: false,
+                error: 'Smart contract not available'
+            });
+        }
+        
+        const isVerified = await contract.methods.isNINVerified(address).call();
+        let ninHash = null;
+        
+        if (isVerified) {
+            try {
+                ninHash = await contract.methods.getVoterNINHash(address).call();
+            } catch (error) {
+                // NIN hash might not be accessible, that's okay
+            }
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                address,
+                isNINVerified: isVerified,
+                ninHash: ninHash,
+                canVote: isVerified
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error checking NIN status:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error checking verification status'
         });
     }
 });

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIN Verification - BLOCKELECT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shield-check"></i> BLOCKELECT
+            </a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/">Voting</a>
+                <a class="nav-link active" href="/nin-verify.html">NIN Verification</a>
+                <a class="nav-link" href="/official.html">Official</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading State -->
+    <div id="loading" class="text-center p-5">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Connecting to blockchain...</p>
+    </div>
+
+    <!-- No MetaMask -->
+    <aside id="noWallet" style="display: none;">
+        <h1>⚠️ MetaMask Required</h1>
+        <p>Please install MetaMask to verify your NIN and vote.</p>
+        <a href="https://metamask.io/download.html" class="btn btn-primary" target="_blank">Install MetaMask</a>
+    </aside>
+
+    <!-- Sign In Section -->
+    <aside id="signIn" style="display: none;">
+        <h1>🔐 Connect Wallet</h1>
+        <p>Connect your MetaMask wallet to verify your NIN.</p>
+        <button id="signInBtn" class="btn btn-success">
+            <i class="bi bi-wallet2"></i> Connect Wallet
+        </button>
+    </aside>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="container mt-4" style="display: none;">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="bi bi-person-check"></i> National Identification Number (NIN) Verification
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        
+                        <!-- Verification Status -->
+                        <div id="verificationStatus" class="alert" style="display: none;"></div>
+                        
+                        <!-- Step 1: NIN Verification Form -->
+                        <div id="step1" class="mb-4">
+                            <h5><i class="bi bi-1-circle"></i> Step 1: Verify Your NIN</h5>
+                            <p class="text-muted">Enter your NIN details to verify your identity.</p>
+                            
+                            <form id="ninVerificationForm">
+                                <div class="mb-3">
+                                    <label for="nin" class="form-label">National Identification Number (NIN)</label>
+                                    <input type="text" class="form-control" id="nin" placeholder="Enter your 11-digit NIN" maxlength="11" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="dateOfBirth" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" placeholder="Enter your last name" required>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" id="verifyNinBtn">
+                                    <i class="bi bi-search"></i> Verify NIN
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Step 2: Blockchain Verification -->
+                        <div id="step2" style="display: none;" class="mb-4">
+                            <h5><i class="bi bi-2-circle"></i> Step 2: Blockchain Registration</h5>
+                            <p class="text-muted">Register your verified NIN on the blockchain to enable voting.</p>
+                            
+                            <div id="ninVerifiedData" class="alert alert-success">
+                                <!-- NIN verification results will be displayed here -->
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Your Wallet Address:</label>
+                                <div id="userAddress" class="form-control bg-light"></div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-success" id="registerOnBlockchainBtn">
+                                <i class="bi bi-shield-plus"></i> Register on Blockchain
+                            </button>
+                        </div>
+
+                        <!-- Step 3: Completion -->
+                        <div id="step3" style="display: none;" class="text-center">
+                            <div class="alert alert-success">
+                                <h5><i class="bi bi-check-circle-fill"></i> NIN Verification Complete!</h5>
+                                <p class="mb-0">Your NIN has been verified and registered on the blockchain. You can now vote in elections.</p>
+                            </div>
+                            
+                            <a href="/" class="btn btn-primary">
+                                <i class="bi bi-arrow-left"></i> Go to Voting
+                            </a>
+                        </div>
+
+                        <!-- Already Verified -->
+                        <div id="alreadyVerified" style="display: none;" class="text-center">
+                            <div class="alert alert-info">
+                                <h5><i class="bi bi-check-circle-fill"></i> Already Verified</h5>
+                                <p class="mb-0">Your NIN is already verified on the blockchain. You can vote in elections.</p>
+                            </div>
+                            
+                            <a href="/" class="btn btn-primary">
+                                <i class="bi bi-arrow-left"></i> Go to Voting
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Web3 and Contract -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="/js/alert.js"></script>
+    <script src="/js/nin-verification.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
+</body>
+
+</html>
