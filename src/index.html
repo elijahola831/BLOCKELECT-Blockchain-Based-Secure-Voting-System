@@ -37,23 +37,29 @@
                     </p>
                     <p id="acctType"></p>
                 </div>
-                <!-- NIN Voter Verification Section -->
-                <div style="margin-top: 15px; text-align: center;">
-                    <button id="nin-verify-btn" 
-                            style="background: linear-gradient(45deg, #28a745, #20c997); color: white; 
-                                   border: none; padding: 12px 24px; border-radius: 25px; font-weight: bold; 
-                                   cursor: pointer; box-shadow: 0 3px 10px rgba(40,167,69,0.3); 
-                                   transition: all 0.3s ease; font-size: 14px; margin: 5px;"
-                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(40,167,69,0.4)'"
-                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 10px rgba(40,167,69,0.3)'"
-                            onclick="showNINVerification()">
-                        🆔 Verify NIN to Vote
+                
+                <!-- Enhanced NIN Verification Section -->
+                <div id="nin-verification-section" style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <i class="bi bi-shield-check" style="font-size: 20px;"></i>
+                        <h3 style="margin: 0; font-size: 16px;">Voter Identity Verification</h3>
+                    </div>
+                    <p style="margin: 0 0 15px 0; font-size: 14px; opacity: 0.9;">Verify your National Identification Number (NIN) to register as an eligible voter.</p>
+                    <button id="enhanced-nin-btn" onclick="window.enhancedNIN?.showModal()" 
+                            style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px;"
+                            onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                            onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                        <i class="bi bi-person-check"></i>
+                        🆔 Enhanced NIN Verification
                     </button>
                     
-                    <button onclick="loginExistingVoter()" 
-                            style="background: #17a2b8; color: white; border: none; padding: 10px 20px; 
-                                   border-radius: 20px; cursor: pointer; font-size: 13px; margin: 5px; font-weight: bold;">
-                        🔑 Login with Voter ID
+                    <!-- Test Data Helper Button -->
+                    <button onclick="window.enhancedNIN?.showTestData()" 
+                            style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.8); padding: 8px 15px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.3s ease; width: 100%; display: flex; align-items: center; justify-content: center; gap: 5px;"
+                            onmouseover="this.style.background='rgba(255, 255, 255, 0.15)'; this.style.color='white'"
+                            onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.color='rgba(255, 255, 255, 0.8)'">
+                        <i class="bi bi-info-circle"></i>
+                        📊 View Test Data
                     </button>
                 </div>
             </div>
@@ -118,38 +124,28 @@
     <!-- Load Web3 from CDN for better compatibility -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.4/dist/web3.min.js"></script>
     <script src="/js/app.js"></script>
-    <script src="/js/nin-verification.js"></script>
+    <script src="/js/enhanced-nin-system.js"></script>
     
+    <!-- Initialize Enhanced NIN System -->
     <script>
-        // NIN Verification System Functions
-        function showNINVerification() {
-            console.log('🆔 Opening NIN verification...');
-            if (window.ninVerifier) {
-                window.ninVerifier.showNINVerification();
-            } else {
-                // Fallback if NIN verifier not loaded yet
-                setTimeout(() => {
-                    if (window.ninVerifier) {
-                        window.ninVerifier.showNINVerification();
-                    } else {
-                        alert('🆔 NIN Verification system is loading... Please try again in a moment.');
-                    }
-                }, 1000);
-            }
-        }
-        
-        function loginExistingVoter() {
-            console.log('🔑 Opening existing voter login...');
-            if (window.ninVerifier) {
-                window.ninVerifier.loginExistingVoter();
-            } else {
-                // Simple fallback
-                const voterID = prompt('🔑 Enter your Voter ID:');
-                if (voterID) {
-                    alert('✅ Login functionality will be available once the NIN verification system loads.');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Enhanced NIN Verification System
+            try {
+                window.enhancedNIN = new EnhancedNINVerifier();
+                console.log('✅ Enhanced NIN System initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to initialize Enhanced NIN System:', error);
+                
+                // Fallback: Disable the button if initialization fails
+                const ninBtn = document.getElementById('enhanced-nin-btn');
+                if (ninBtn) {
+                    ninBtn.disabled = true;
+                    ninBtn.innerHTML = '<i class="bi bi-exclamation-triangle"></i> System Unavailable';
+                    ninBtn.style.opacity = '0.6';
+                    ninBtn.onclick = () => alert('Enhanced NIN System is currently unavailable. Please refresh the page and try again.');
                 }
             }
-        }
+        });
     </script>
     
     <!-- PWA Service Worker Registration -->

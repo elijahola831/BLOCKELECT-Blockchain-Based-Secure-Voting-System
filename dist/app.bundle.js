@@ -878,59 +878,88 @@ var App = {
     return loadCandidates;
   }(),
   selectCandidate: function selectCandidate(index, name, party) {
+    console.log("[CANDIDATE] Selecting candidate ".concat(index, ": ").concat(name, " (").concat(party, ")"));
     App.selectedCandidate = index;
 
     // Remove previous selections
     var rows = document.querySelectorAll("#boxCandidate tr");
-    rows.forEach(function (row) {
-      return row.classList.remove("selected");
+    rows.forEach(function (row, i) {
+      row.classList.remove("selected");
+      if (i === index) {
+        console.log("[CANDIDATE] Highlighting row ".concat(i));
+      }
     });
 
     // Highlight selected row
-    rows[index].classList.add("selected");
+    if (rows[index]) {
+      rows[index].classList.add("selected");
+      console.log("[CANDIDATE] Selected row class added");
+    }
 
     // Show vote section and enable button
-    document.getElementById("vote").style.display = "block";
-    document.getElementById("cantVote").style.display = "none";
-    document.getElementById("voteButton").disabled = false;
-    Alert.show("info", "hand-index-fill", "Candidate Selected!", "You selected ".concat(name, " of the ").concat(party, " political party."));
+    var voteSection = document.getElementById("vote");
+    var cantVoteSection = document.getElementById("cantVote");
+    var voteButton = document.getElementById("voteButton");
+    if (voteSection) {
+      voteSection.style.display = "block";
+      console.log("[CANDIDATE] Vote section displayed");
+    }
+    if (cantVoteSection) {
+      cantVoteSection.style.display = "none";
+    }
+    if (voteButton) {
+      voteButton.disabled = false;
+      console.log("[CANDIDATE] Vote button enabled");
+    }
+    Alert.show("info", "hand-index-fill", "Candidate Selected!", "You selected ".concat(name, " of the ").concat(party, " political party. Click 'Cast Vote' to submit your vote."));
+    console.log("[CANDIDATE] Selection complete. selectedCandidate = ".concat(App.selectedCandidate));
   },
   vote: function () {
     var _vote = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
-      var hasVoted, startDate, endDate, currentTime, startDateObj, endDateObj, result, names, receipt, errorMessage, _t8, _t9;
+      var hasVoted, startDate, endDate, currentTime, timingInfo, startDateObj, endDateObj, result, names, voteButton, receipt, voteSection, errorMessage, errorTitle, _voteButton2, _t8, _t9;
       return _regenerator().w(function (_context11) {
         while (1) switch (_context11.p = _context11.n) {
           case 0:
+            console.log("[VOTE] Starting vote process...");
+            console.log("[VOTE] Contract:", App.contract ? "✅ Available" : "❌ Missing");
+            console.log("[VOTE] Account:", App.account || "❌ Missing");
+            console.log("[VOTE] Selected Candidate:", App.selectedCandidate);
             if (!(!App.contract || !App.account)) {
               _context11.n = 1;
               break;
             }
+            console.error("[VOTE] Contract or account missing");
             Alert.show("warning", "box-arrow-right", "Citizen Signed Out!", "You signed out of BLOCKELECT. Reconnect to MetaMask wallet to sign in again.");
             return _context11.a(2);
           case 1:
-            if (!(App.selectedCandidate === null)) {
+            if (!(App.selectedCandidate === null || App.selectedCandidate === undefined)) {
               _context11.n = 2;
               break;
             }
+            console.error("[VOTE] No candidate selected");
             Alert.show("warning", "person-fill-x", "No Candidate Selected!", "Please select a candidate before voting.");
             return _context11.a(2);
           case 2:
             _context11.p = 2;
-            console.log("Performing pre-flight checks...");
+            console.log("[VOTE] Performing comprehensive pre-flight checks...");
 
             // Check if already voted
+            console.log("[VOTE] Checking if user has already voted...");
             _context11.n = 3;
             return App.contract.methods.hasVoted(App.account).call();
           case 3:
             hasVoted = _context11.v;
-            console.log("Has already voted:", hasVoted);
+            console.log("[VOTE] Has already voted: ".concat(hasVoted));
             if (!hasVoted) {
               _context11.n = 4;
               break;
             }
+            console.error("[VOTE] User has already voted - aborting");
             Alert.show("warning", "check-circle-fill", "Already Voted!", "You have already cast your vote in this election.");
             return _context11.a(2);
           case 4:
+            // Check election dates
+            console.log("[VOTE] Checking election timing...");
             _context11.n = 5;
             return App.contract.methods.startDate().call();
           case 5:
@@ -940,118 +969,158 @@ var App = {
           case 6:
             endDate = _context11.v;
             currentTime = Math.floor(Date.now() / 1000);
-            console.log("Election timing:", {
+            timingInfo = {
               startDate: Number(startDate),
               endDate: Number(endDate),
               currentTime: currentTime,
+              startDateReadable: new Date(Number(startDate) * 1000).toString(),
+              endDateReadable: new Date(Number(endDate) * 1000).toString(),
               electionStarted: currentTime >= Number(startDate),
-              electionEnded: currentTime > Number(endDate)
-            });
-            if (!(currentTime < Number(startDate))) {
+              electionEnded: currentTime > Number(endDate),
+              datesSet: Number(startDate) > 0 && Number(endDate) > 0
+            };
+            console.log("[VOTE] Election timing:", timingInfo);
+            if (timingInfo.datesSet) {
               _context11.n = 7;
               break;
             }
-            startDateObj = new Date(Number(startDate) * 1000);
-            Alert.show("warning", "calendar-x", "Election Not Started!", "The election has not started yet. It begins on ".concat(startDateObj.toLocaleDateString(), "."));
+            console.error("[VOTE] Election dates not set - aborting");
+            Alert.show("warning", "calendar-x", "Election Not Configured!", "The election dates have not been set yet. Please contact an official to configure the election.");
             return _context11.a(2);
           case 7:
-            if (!(currentTime > Number(endDate))) {
+            if (!(currentTime < Number(startDate))) {
               _context11.n = 8;
               break;
             }
-            endDateObj = new Date(Number(endDate) * 1000);
-            Alert.show("warning", "calendar-x-fill", "Election Ended!", "The election has ended. It ended on ".concat(endDateObj.toLocaleDateString(), "."));
+            console.error("[VOTE] Election not started yet - aborting");
+            startDateObj = new Date(Number(startDate) * 1000);
+            Alert.show("warning", "calendar-x", "Election Not Started!", "The election has not started yet. It begins on ".concat(startDateObj.toLocaleDateString(), " at ").concat(startDateObj.toLocaleTimeString(), "."));
             return _context11.a(2);
           case 8:
-            _context11.n = 9;
-            return App.contract.methods.getCandidates().call();
-          case 9:
-            result = _context11.v;
-            if (!result.names) {
-              _context11.n = 10;
+            if (!(currentTime > Number(endDate))) {
+              _context11.n = 9;
               break;
             }
-            names = result.names;
-            _context11.n = 12;
-            break;
+            console.error("[VOTE] Election has ended - aborting");
+            endDateObj = new Date(Number(endDate) * 1000);
+            Alert.show("warning", "calendar-x-fill", "Election Ended!", "The election has ended. It ended on ".concat(endDateObj.toLocaleDateString(), " at ").concat(endDateObj.toLocaleTimeString(), "."));
+            return _context11.a(2);
+          case 9:
+            _context11.n = 10;
+            return App.contract.methods.getCandidates().call();
           case 10:
-            if (!result[0]) {
+            result = _context11.v;
+            if (!result.names) {
               _context11.n = 11;
               break;
             }
-            names = result[0];
-            _context11.n = 12;
+            names = result.names;
+            _context11.n = 13;
             break;
           case 11:
-            throw new Error("Unable to get candidates list");
+            if (!result[0]) {
+              _context11.n = 12;
+              break;
+            }
+            names = result[0];
+            _context11.n = 13;
+            break;
           case 12:
+            throw new Error("Unable to get candidates list");
+          case 13:
             if (!(App.selectedCandidate >= names.length)) {
-              _context11.n = 13;
+              _context11.n = 14;
               break;
             }
             Alert.show("warning", "person-fill-x", "Invalid Candidate!", "Selected candidate is invalid. Please refresh and try again.");
             return _context11.a(2);
-          case 13:
-            console.log("All pre-flight checks passed. Proceeding with vote...");
-            _context11.n = 15;
-            break;
           case 14:
-            _context11.p = 14;
+            console.log("[VOTE] All pre-flight checks passed. Proceeding with vote...");
+            _context11.n = 16;
+            break;
+          case 15:
+            _context11.p = 15;
             _t8 = _context11.v;
-            console.error("Pre-flight check error:", _t8);
+            console.error("[VOTE] Pre-flight check error:", _t8);
             Alert.show("error", "exclamation-triangle-fill", "Pre-flight Check Failed!", "Error checking voting eligibility: ".concat(_t8.message));
             return _context11.a(2);
-          case 15:
-            Alert.show("info", "clock-history", "Voting...", "Submitting your vote to the blockchain.");
-            _context11.p = 16;
-            console.log("Voting for candidate index: ".concat(App.selectedCandidate));
+          case 16:
+            // Disable vote button to prevent double voting
+            voteButton = document.getElementById("voteButton");
+            if (voteButton) {
+              voteButton.disabled = true;
+              voteButton.textContent = "Voting...";
+            }
+            Alert.show("info", "clock-history", "Voting...", "Submitting your vote to the blockchain. Please confirm the transaction in MetaMask.");
+            _context11.p = 17;
+            console.log("[VOTE] Initiating vote transaction for candidate index: ".concat(App.selectedCandidate));
 
-            // Send the transaction without gas estimation to avoid BigInt issues
-            _context11.n = 17;
+            // Send the transaction
+            _context11.n = 18;
             return App.contract.methods.vote(App.selectedCandidate).send({
               from: App.account
               // Let MetaMask/Web3 handle gas estimation automatically
             });
-          case 17:
-            receipt = _context11.v;
-            console.log("Vote transaction receipt:", receipt);
-            Alert.show("success", "check-circle-fill", "Voted!", "Your vote has been cast successfully!");
-            _context11.n = 18;
-            return App.loadCandidates();
           case 18:
+            receipt = _context11.v;
+            console.log("[VOTE] Vote transaction successful! Receipt:", receipt);
+            console.log("[VOTE] Transaction hash: ".concat(receipt.transactionHash));
+            console.log("[VOTE] Gas used: ".concat(receipt.gasUsed));
+            Alert.show("success", "check-circle-fill", "Vote Cast Successfully!", "Your vote has been recorded on the blockchain. Transaction: ".concat(receipt.transactionHash.substring(0, 10), "..."));
+
+            // Reload candidates to show updated vote counts
+            console.log("[VOTE] Reloading candidates to show updated vote counts...");
+            _context11.n = 19;
+            return App.loadCandidates();
+          case 19:
             // Reset selection after voting
             App.selectedCandidate = null;
-            document.getElementById("vote").style.display = "none";
-            document.getElementById("voteButton").disabled = true;
-            _context11.n = 20;
+            voteSection = document.getElementById("vote");
+            if (voteSection) voteSection.style.display = "none";
+            console.log("[VOTE] Vote process completed successfully!");
+            _context11.n = 21;
             break;
-          case 19:
-            _context11.p = 19;
+          case 20:
+            _context11.p = 20;
             _t9 = _context11.v;
-            console.error("Voting error:", _t9);
-            console.error("Error details:", _t9.message);
-            console.error("Error data:", _t9.data);
-            errorMessage = _t9.message; // Try to decode common error reasons
+            console.error("[VOTE] Voting transaction failed:", _t9);
+            console.error("[VOTE] Error details:", _t9.message);
+            console.error("[VOTE] Error data:", _t9.data);
+            errorMessage = _t9.message;
+            errorTitle = "Voting Error!"; // Try to decode common error reasons
             if (_t9.message.includes("revert")) {
               if (_t9.message.includes("Already voted")) {
                 errorMessage = "You have already voted in this election.";
+                errorTitle = "Already Voted!";
               } else if (_t9.message.includes("Election not active")) {
-                errorMessage = "The election is not currently active.";
+                errorMessage = "The election is not currently active. Please check the election dates.";
+                errorTitle = "Election Inactive!";
               } else if (_t9.message.includes("Invalid candidate")) {
-                errorMessage = "The selected candidate is invalid.";
+                errorMessage = "The selected candidate is invalid. Please refresh and try again.";
+                errorTitle = "Invalid Candidate!";
               } else {
-                errorMessage = "Transaction was reverted by the smart contract.";
+                errorMessage = "Transaction was reverted by the smart contract. Please check the election status.";
+                errorTitle = "Transaction Reverted!";
               }
             } else if (_t9.message.includes("User denied")) {
-              errorMessage = "You rejected the transaction in MetaMask.";
+              errorMessage = "You rejected the transaction in MetaMask. Your vote was not submitted.";
+              errorTitle = "Transaction Rejected!";
             } else if (_t9.message.includes("insufficient funds")) {
-              errorMessage = "Insufficient funds to pay for gas fees.";
+              errorMessage = "Insufficient ETH to pay for gas fees. Please get more ETH from Ganache.";
+              errorTitle = "Insufficient Funds!";
             }
-            Alert.show("error", "exclamation-triangle-fill", "Voting Error!", errorMessage);
-          case 20:
+
+            // Reset vote button
+            _voteButton2 = document.getElementById("voteButton");
+            if (_voteButton2) {
+              _voteButton2.disabled = false;
+              _voteButton2.textContent = "Cast Vote";
+            }
+            Alert.show("error", "exclamation-triangle-fill", errorTitle, errorMessage);
+          case 21:
             return _context11.a(2);
         }
-      }, _callee10, null, [[16, 19], [2, 14]]);
+      }, _callee10, null, [[17, 20], [2, 15]]);
     }));
     function vote() {
       return _vote.apply(this, arguments);

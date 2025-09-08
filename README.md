@@ -21,13 +21,15 @@
 
 ### 🎆 **6 Advanced Technology Implementations:**
 
-#### 1. 🆔 **NIN Verification System**
-- **Government Identity Integration**: Official National Identification Number verification
+#### 1. 🆔 **NIN Verification System** ⭐ **ENHANCED WITH BACKEND API**
+- **Government Identity Integration**: Official National Identification Number verification with mock NIMC API
+- **Backend API Endpoint**: `/api/verify-nin` with comprehensive validation and error handling
 - **Multi-Factor Authentication**: NIN + Date of Birth + Last Name validation
 - **Universal Compatibility**: Works on all devices without special hardware
-- **Enhanced Security**: Government-backed identity verification system
+- **Enhanced Security**: Rate limiting, input sanitization, and secure error handling
 - **Better Accessibility**: No camera or biometric hardware requirements
-- **Sample Testing**: Pre-loaded test data for development and demonstration
+- **Comprehensive Testing**: Pre-loaded test data with valid and invalid test cases
+- **Professional Error Handling**: Detailed error messages with suggestions for users
 
 #### 2. 📊 **Real-Time Analytics Dashboard**
 - **Interactive Charts**: Live vote distribution and activity monitoring using Chart.js
@@ -500,6 +502,129 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Developer**: Ughili Samuel Adiwu  
 **Institution**: Department of Computer Science, Olusegun Agagu University of Science and Technology  
 **Project**: Final Year Project - Blockchain-Based Secure Voting System
+
+### **🆔 NIN Verification System Setup & Testing**
+
+#### **🚀 Quick Start Guide**
+
+1. **Start the BLOCKELECT server:**
+   ```bash
+   npm start
+   # Server will be available at http://localhost:3000
+   ```
+
+2. **Open the voting interface:**
+   ```bash
+   # Open in your browser
+   http://localhost:3000
+   ```
+
+3. **Test NIN Verification:**
+   - Click **"🆔 Verify NIN to Vote"** button on the main page
+   - Use one of the test NINs below
+
+#### **🏠 Valid Test NINs (Copy & Paste)**
+
+| NIN | Name | Date of Birth | Last Name |
+|-----|------|---------------|----------|
+| `81325082453` | Samuel Ughili | `1995-03-15` | `Ughili` |
+| `12345678901` | John Doe | `1990-01-01` | `Doe` |
+| `98765432109` | Jane Smith | `1985-05-15` | `Smith` |
+| `11111111111` | Test User | `1995-12-25` | `User` |
+| `22222222222` | Demo Voter | `1988-07-10` | `Voter` |
+
+#### **❌ Invalid Test Cases (For Testing Error Handling)**
+
+| Test Case | NIN | Expected Error |
+|-----------|-----|----------------|
+| **Suspended NIN** | `33333333333` | `INACTIVE_NIN` |
+| **NIN Not Found** | `99999999999` | `NIN_NOT_FOUND` |
+| **Wrong Format** | `1234567890` | `INVALID_NIN_FORMAT` |
+| **Contains Letters** | `12345678901a` | `INVALID_NIN_FORMAT` |
+
+#### **🔍 API Testing (Optional)**
+
+**Test the backend API directly with curl:**
+
+```bash
+# Test valid NIN verification
+curl -X POST http://localhost:3000/api/verify-nin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nin": "81325082453",
+    "dateOfBirth": "1995-03-15",
+    "lastName": "Ughili"
+  }'
+
+# Expected response: {"success": true, "data": {...}}
+```
+
+```bash
+# Test invalid NIN
+curl -X POST http://localhost:3000/api/verify-nin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nin": "99999999999",
+    "dateOfBirth": "1990-01-01",
+    "lastName": "NotFound"
+  }'
+
+# Expected response: {"success": false, "error": "NIN not found..."}
+```
+
+#### **🗺️ Available API Endpoints**
+
+- `POST /api/verify-nin` - Verify NIN with personal details
+- `GET /api/nin-test-data` - Get available test NINs
+- `GET /api/health` - Check system health
+- `GET /api/contract-data` - Get smart contract information
+
+#### **🔍 Comprehensive Testing**
+
+For detailed test cases, see: `NIN_TEST_CASES.md`
+
+```bash
+# Run automated tests in browser console
+# 1. Open browser dev tools (F12)
+# 2. Go to Console tab
+# 3. Run the test function:
+runAllTests()
+```
+
+#### **🎯 Step-by-Step Testing Instructions**
+
+**Test Successful Verification:**
+1. Click "🆔 Verify NIN to Vote"
+2. Enter NIN: `81325082453`
+3. Enter DOB: `1995-03-15`
+4. Enter Last Name: `Ughili`
+5. Click "Verify NIN"
+6. ✅ Should show successful verification with user details
+7. Click "Register to Vote"
+8. 🎉 Should complete voter registration
+
+**Test Error Handling:**
+1. Click "🆔 Verify NIN to Vote"
+2. Enter NIN: `99999999999`
+3. Enter DOB: `1990-01-01`
+4. Enter Last Name: `NotFound`
+5. Click "Verify NIN"
+6. ❌ Should show "NIN not found" error with suggestions
+
+#### **🔒 Security Features**
+
+- **Rate Limiting**: Max 10 requests per IP per minute
+- **Input Sanitization**: XSS and injection prevention
+- **Format Validation**: Strict NIN, date, and name validation
+- **Error Handling**: Secure error messages without sensitive data
+- **Request Size Limiting**: 1KB limit on request body size
+
+#### **📊 Performance & Monitoring**
+
+- **Simulated API Delay**: 500-1500ms (mimics real NIMC API)
+- **Memory Management**: Automatic cleanup of rate limit data
+- **Logging**: All verification attempts are logged
+- **Health Check**: Monitor system status at `/api/health`
 
 ### **🔗 Links**
 - **GitHub Repository**: [BLOCKELECT](https://github.com/elijahola831/BLOCKELECT-Blockchain-Based-Secure-Voting-System)
